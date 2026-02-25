@@ -1,0 +1,46 @@
+services:
+  storage:
+    build: ./services/storage/
+    container_name: vaito_storage
+    restart: unless-stopped
+    depends_on: 
+      - postgres_db
+    networks:
+      - vaito_inner_net
+
+  gateway:
+    build: ./services/gateway/
+    container_name: vaito_gateway
+    restart: unless-stopped
+    networks:
+      - vaito_inner_net
+      - vaito_outer_net
+    ports:
+      - '4000:4000'
+
+  postgres_db:
+    image: postgres:18
+    container_name: vaito_postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD=pa55word
+      - POSTGRES_DB=vaito
+      - POSTGRES_USER=vaito
+    volumes:
+      - vaito_postgres_db:/var/lib/postgresql
+    networks:
+      - vaito_inner_net
+    ports:
+      - '5432:5432'
+
+volumes:
+  vaito_postgres_db:
+
+networks:
+  vaito_outer_net:
+    name: vaito_outer_net
+    driver: bridge
+  vaito_inner_net:
+    name: vaito_inner_net
+    driver: bridge
+
