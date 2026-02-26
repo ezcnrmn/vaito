@@ -3,23 +3,25 @@ package main
 import (
 	"context"
 	"database/sql"
-	"flag"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	_ "github.com/lib/pq"
 )
 
-// TODO:
-const default_dsn string = "postgres://vaito:pa55word@postgres_db:5432/vaito?sslmode=disable"
-
 func main() {
-	dsn := flag.String("db-dsn", default_dsn, "PostgteSQL DSN")
-	flag.Parse()
+	dsn := os.Getenv("DB_DSN")
+	if dsn == "" {
+		log.Fatal("no DB_DSN was provided")
+	}
 
-	db, err := openDB(*dsn)
+	selfUrl := fmt.Sprintf(":%s", os.Getenv("STORAGE_PORT"))
+	_ = fmt.Sprintf("%s:%s", os.Getenv("GATEWAY_HOST"), os.Getenv("GATEWAY_PORT"))
+
+	db, err := openDB(dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -28,13 +30,13 @@ func main() {
 	log.Println("database connection pool established")
 
 	server := &http.Server{
-		Addr: ":4001",
+		Addr: selfUrl,
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("Hello from storage"))
 		}),
 	}
 
-	fmt.Println("storage started")
+	log.Println("storage started on ", selfUrl)
 	err = server.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)

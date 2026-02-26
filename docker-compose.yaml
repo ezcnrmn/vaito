@@ -7,6 +7,8 @@ services:
       - postgres_db
     networks:
       - vaito_inner_net
+    env_file:
+      - .env
 
   gateway:
     build: ./services/gateway/
@@ -16,22 +18,22 @@ services:
       - vaito_inner_net
       - vaito_outer_net
     ports:
-      - '4000:4000'
+      - '${GATEWAY_PORT}:${GATEWAY_PORT}'
+    env_file:
+      - .env
 
   postgres_db:
     image: postgres:18
     container_name: vaito_postgres
     restart: unless-stopped
-    environment:
-      - POSTGRES_PASSWORD=pa55word
-      - POSTGRES_DB=vaito
-      - POSTGRES_USER=vaito
     volumes:
       - vaito_postgres_db:/var/lib/postgresql
     networks:
       - vaito_inner_net
     ports:
-      - '5432:5432'
+      - '127.0.0.1:5432:5432'
+    env_file:
+      - .env
 
 volumes:
   vaito_postgres_db:
