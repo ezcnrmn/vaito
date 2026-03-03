@@ -4,7 +4,10 @@ services:
     container_name: vaito_storage
     restart: unless-stopped
     depends_on: 
-      - postgres_db
+      postgres_db:
+        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
     networks:
       - vaito_inner_net
     env_file:
@@ -34,6 +37,23 @@ services:
       - '127.0.0.1:5432:5432'
     env_file:
       - .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  migration:
+    image: migrate/migrate
+    container_name: vaito_migration
+    command: ["-path=/migrations", "-database=${DB_DSN}", "up"]
+    volumes:
+      - ./migrations:/migrations
+    networks:
+      - vaito_inner_net
+    depends_on:
+      postgres_db:
+        condition: service_healthy
 
 volumes:
   vaito_postgres_db:
