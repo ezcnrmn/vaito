@@ -20,7 +20,7 @@ db/migrations/up: ## Apply db migrations
 
 .PHONY: run/gateway
 run/gateway: ## Runs gateway service
-	go run -C services/gateway ./cmd/api/main.go
+	-go run -C services/gateway ./cmd/api/main.go
 
 .PHONY: run/storage
 run/storage: ## Runs storage service
