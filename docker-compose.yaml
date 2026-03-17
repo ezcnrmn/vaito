@@ -1,6 +1,8 @@
 services:
   storage:
-    build: ./services/storage/
+    build:
+      context: .
+      dockerfile: ./services/storage/Dockerfile
     container_name: vaito_storage
     restart: unless-stopped
     depends_on: 
@@ -14,7 +16,9 @@ services:
       - .env
 
   gateway:
-    build: ./services/gateway/
+    build:
+      context: .
+      dockerfile: ./services/gateway/Dockerfile
     container_name: vaito_gateway
     restart: unless-stopped
     networks:

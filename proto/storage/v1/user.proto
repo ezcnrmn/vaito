@@ -1,0 +1,18 @@
+syntax = "proto3";
+package vaito.v1;
+
+option go_package = "github.com/ezcnrmn/vaito/gen/go/vaito";
+
+service User {
+  rpc CreateUser (CreateUserRequest) returns (CreateUserResponse) {}
+}
+
+message CreateUserRequest {
+  string name = 1;
+  string email = 2;
+  string password_hash = 3;
+}
+
+message CreateUserResponse {
+  int64 id = 1;
+}

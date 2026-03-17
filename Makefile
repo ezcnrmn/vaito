@@ -26,3 +26,21 @@ run/gateway: ## Runs gateway service
 run/storage: ## Runs storage service
 	go run -C services/storage ./cmd/api/main.go
 
+PROTO_DIR := ./proto/storage/v1
+OUT_DIR := ./gen/go/storage
+MODULE_NAME := github.com/ezcnrmn/vaito/gen/go/storage
+
+.PHONY: gen/storage
+gen/storage: ## Gens go code for storage .proto
+	@mkdir $$OUT_DIR -p
+
+	@if [ ! -f $(OUT_DIR)/go.mod ]; then \
+		cd $(OUT_DIR) && go mod init $(MODULE_NAME); \
+	fi
+
+	@for file in ${wildcard ${PROTO_DIR}/*.proto}; do \
+		protoc --proto_path=$(PROTO_DIR) --go_out=$$OUT_DIR --go_opt=paths=source_relative --go-grpc_out=$$OUT_DIR --go-grpc_opt=paths=source_relative $$file; \
+	done
+
+	cd $(OUT_DIR) && go mod tidy
+

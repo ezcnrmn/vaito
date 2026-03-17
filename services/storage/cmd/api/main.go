@@ -1,14 +1,14 @@
 package main
 
 import (
-	"context"
-	"database/sql"
 	"fmt"
 	"log"
-	"net/http"
+	"log/slog"
 	"os"
 	"time"
 
+	"github.com/ezcnrmn/vaito/services/storage/internal/app"
+	"github.com/ezcnrmn/vaito/services/storage/internal/config"
 	_ "github.com/lib/pq"
 )
 
@@ -18,50 +18,26 @@ func main() {
 		log.Fatal("no DB_DSN was provided")
 	}
 
-	selfUrl := fmt.Sprintf(":%s", os.Getenv("STORAGE_PORT"))
-	_ = fmt.Sprintf("%s:%s", os.Getenv("GATEWAY_HOST"), os.Getenv("GATEWAY_PORT"))
+	gatewayUrl := fmt.Sprintf("%s:%s", os.Getenv("GATEWAY_HOST"), os.Getenv("GATEWAY_PORT"))
+	port := os.Getenv("STORAGE_PORT")
 
-	db, err := openDB(dsn)
+	config := &config.Config{
+		Port:       port,
+		GatewayUrl: gatewayUrl,
+	}
+	config.DB.DSN = dsn
+
+	// TODO: вынести в env
+	config.DB.MaxOpenConns = 25
+	config.DB.MaxIdleConns = 25
+	config.DB.MaxIdleTime = 15 * time.Minute
+
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
+	app := app.New(config, logger)
+	err := app.Run()
 	if err != nil {
-		log.Fatal(err)
+		logger.Error(err.Error())
+		os.Exit(1)
 	}
-
-	defer db.Close()
-	log.Println("database connection pool established")
-
-	server := &http.Server{
-		Addr: selfUrl,
-		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("Hello from storage"))
-		}),
-	}
-
-	log.Println("storage started on ", selfUrl)
-	err = server.ListenAndServe()
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func openDB(dsn string) (*sql.DB, error) {
-	db, err := sql.Open("postgres", dsn)
-	if err != nil {
-		return nil, err
-	}
-
-	// TODO: вынести в конфиг
-	db.SetMaxOpenConns(25)
-	db.SetMaxIdleConns(25)
-	db.SetConnMaxIdleTime(15 * time.Minute)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	err = db.PingContext(ctx)
-	if err != nil {
-		db.Close()
-		return nil, err
-	}
-
-	return db, nil
 }

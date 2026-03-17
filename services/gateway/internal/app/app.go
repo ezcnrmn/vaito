@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"gateway/internal/config"
-	"gateway/internal/handler"
 	"log/slog"
 	"net/http"
 	"os"
@@ -13,28 +11,47 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/julienschmidt/httprouter"
+	pb "github.com/ezcnrmn/vaito/gen/go/storage"
+	"github.com/ezcnrmn/vaito/services/gateway/internal/config"
 )
 
 type App struct {
-	cfg    *config.Config
-	log    *slog.Logger
-	server *http.Server
+	cfg        *config.Config
+	log        *slog.Logger
+	httpServer *http.Server
+	grpc       struct {
+		user    pb.UserClient
+		listing pb.ListingClient
+	}
 }
 
-func New(config *config.Config, logger *slog.Logger) *App {
-	routes := getRoutes(config, logger)
+func New(
+	config *config.Config,
+	logger *slog.Logger,
+	userConn pb.UserClient,
+	listingConn pb.ListingClient,
+) *App {
+	app := &App{
+		cfg: config,
+		log: logger,
+		grpc: struct {
+			user    pb.UserClient
+			listing pb.ListingClient
+		}{
+			user:    userConn,
+			listing: listingConn,
+		},
+	}
 
-	server := &http.Server{
+	routes := app.routes()
+
+	httpServer := &http.Server{
 		Addr:    fmt.Sprintf(":%s", config.Port),
 		Handler: routes,
 	}
+	app.httpServer = httpServer
 
-	return &App{
-		cfg:    config,
-		log:    logger,
-		server: server,
-	}
+	return app
 }
 
 func (a *App) Run() error {
@@ -50,7 +67,7 @@ func (a *App) Run() error {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		err := a.server.Shutdown(ctx)
+		err := a.httpServer.Shutdown(ctx)
 		if err != nil {
 			shutdownError <- err
 		}
@@ -60,7 +77,7 @@ func (a *App) Run() error {
 
 	a.log.Info("starting gateway app", "port", a.cfg.Port)
 
-	err := a.server.ListenAndServe()
+	err := a.httpServer.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
@@ -72,24 +89,4 @@ func (a *App) Run() error {
 
 	a.log.Error("gateway app stopped")
 	return nil
-}
-
-func getRoutes(config *config.Config, logger *slog.Logger) *httprouter.Router {
-
-	handler := handler.New(config, logger)
-	routes := httprouter.New()
-
-	routes.HandlerFunc(http.MethodGet, "/v1/healthcheck", handler.Healthcheck)
-
-	routes.HandlerFunc(http.MethodPost, "/v1/users", handler.CreateUser)
-	routes.HandlerFunc(http.MethodPut, "/v1/users/:id", handler.UpdateUser)
-	routes.HandlerFunc(http.MethodGet, "/v1/users/authenticate", handler.Authenticate)
-
-	routes.HandlerFunc(http.MethodPost, "/v1/listings", handler.CreateListings)
-	routes.HandlerFunc(http.MethodGet, "/v1/listings/:id", handler.ShowListings)
-	routes.HandlerFunc(http.MethodPut, "/v1/listings/:id", handler.UpdateListings)
-	routes.HandlerFunc(http.MethodDelete, "/v1/listings/:id", handler.DeleteListings)
-	routes.HandlerFunc(http.MethodGet, "/v1/listings", handler.ListListings)
-
-	return routes
 }

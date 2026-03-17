@@ -1,6 +1,8 @@
 package config
 
 type Config struct {
-	Port       string
-	StorageUrl string
+	Port           string
+	GrpcClientPort string
+	Host           string
+	StorageUrl     string
 }
