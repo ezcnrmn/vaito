@@ -12,41 +12,34 @@ import (
 	"time"
 
 	pb "github.com/ezcnrmn/vaito/gen/go/storage"
-	"github.com/ezcnrmn/vaito/services/gateway/internal/config"
+	"google.golang.org/grpc"
 )
 
 type App struct {
-	cfg        *config.Config
+	port       string
 	log        *slog.Logger
 	httpServer *http.Server
-	grpc       struct {
+	storage    struct {
 		user    pb.UserClient
 		listing pb.ListingClient
 	}
 }
 
-func New(
-	config *config.Config,
-	logger *slog.Logger,
-	userConn pb.UserClient,
-	listingConn pb.ListingClient,
-) *App {
+func New(port string, logger *slog.Logger, grpcClient *grpc.ClientConn) *App {
+	userConn := pb.NewUserClient(grpcClient)
+	listingConn := pb.NewListingClient(grpcClient)
+
 	app := &App{
-		cfg: config,
-		log: logger,
-		grpc: struct {
-			user    pb.UserClient
-			listing pb.ListingClient
-		}{
-			user:    userConn,
-			listing: listingConn,
-		},
+		port: port,
+		log:  logger,
 	}
+	app.storage.user = userConn
+	app.storage.listing = listingConn
 
 	routes := app.routes()
 
 	httpServer := &http.Server{
-		Addr:    fmt.Sprintf(":%s", config.Port),
+		Addr:    fmt.Sprintf(":%s", port),
 		Handler: routes,
 	}
 	app.httpServer = httpServer
@@ -75,7 +68,7 @@ func (a *App) Run() error {
 		shutdownError <- nil
 	}()
 
-	a.log.Info("starting gateway app", "port", a.cfg.Port)
+	a.log.Info("starting gateway app", "port", a.port)
 
 	err := a.httpServer.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {

@@ -8,7 +8,7 @@ import (
 )
 
 func (a *App) routes() http.Handler {
-	handler := handler.New(a.cfg, a.log, a.grpc.user, a.grpc.listing)
+	handler := handler.New(a.log, a.storage.user, a.storage.listing)
 	routes := httprouter.New()
 
 	routes.HandlerFunc(http.MethodGet, "/v1/healthcheck", handler.Healthcheck)
