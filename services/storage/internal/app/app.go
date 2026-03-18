@@ -2,8 +2,12 @@ package app
 
 import (
 	"database/sql"
+	"errors"
 	"log/slog"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 
 	pb "github.com/ezcnrmn/vaito/gen/go/storage"
 	"github.com/ezcnrmn/vaito/services/storage/internal/server"
@@ -17,8 +21,8 @@ type App struct {
 
 func New(logger *slog.Logger, db *sql.DB) *App {
 	s := grpc.NewServer()
-	pb.RegisterListingServer(s, server.NewListingServer(db))
-	pb.RegisterUserServer(s, server.NewUserServer(db))
+	pb.RegisterListingServer(s, server.NewListingServer(db, logger))
+	pb.RegisterUserServer(s, server.NewUserServer(db, logger))
 
 	app := &App{
 		log:        logger,
@@ -29,6 +33,16 @@ func New(logger *slog.Logger, db *sql.DB) *App {
 }
 
 func (a *App) Run(listener net.Listener) error {
+	go func() {
+		sigChan := make(chan os.Signal, 1)
+		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+		s := <-sigChan
+
+		a.log.Info("shutting down storage app", "signal", s.String())
+
+		a.gRPCServer.GracefulStop()
+	}()
+
 	err := a.gRPCServer.Serve(listener)
 	if err != nil {
 		return err

@@ -3,11 +3,10 @@ module github.com/ezcnrmn/vaito/services/gateway
 go 1.25.0
 
 require (
+	github.com/ezcnrmn/vaito/gen/go/storage v0.0.0
 	github.com/go-playground/validator/v10 v10.30.1
-	github.com/golang/protobuf v1.5.4
 	github.com/julienschmidt/httprouter v1.3.0
 	google.golang.org/grpc v1.79.2
-	github.com/ezcnrmn/vaito/gen/go/storage v0.0.0
 )
 
 require (

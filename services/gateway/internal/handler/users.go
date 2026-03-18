@@ -36,11 +36,11 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		PasswordHash: payload.Password,
 	})
 	if err != nil {
-		h.log.Error(err.Error())
+		h.log.Debug(err.Error())
 		writeJSON(w, http.StatusInternalServerError, envelope{"error": err.Error()})
 		return
 	}
-	h.log.Info(resp.String())
+	h.log.Debug(resp.String())
 	writeJSON(w, http.StatusInternalServerError, envelope{"success": resp.String()})
 }
 

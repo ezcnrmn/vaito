@@ -4,17 +4,19 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log/slog"
 
 	pb "github.com/ezcnrmn/vaito/gen/go/storage"
 )
 
 type ListingServer struct {
 	pb.UnimplementedListingServer
-	db *sql.DB
+	db  *sql.DB
+	log *slog.Logger
 }
 
-func NewListingServer(db *sql.DB) *ListingServer {
-	return &ListingServer{db: db}
+func NewListingServer(db *sql.DB, logger *slog.Logger) *ListingServer {
+	return &ListingServer{db: db, log: logger}
 }
 
 func (ls *ListingServer) CreateListing(_ context.Context, req *pb.CreateListingRequest) (*pb.CreateListingResponse, error) {
@@ -29,6 +31,6 @@ func (ls *ListingServer) CreateListing(_ context.Context, req *pb.CreateListingR
 		CategoryId:  req.GetCategoryId(),
 		Price:       req.GetPrice(),
 	}
-	fmt.Printf("Got: %+v", listing)
+	ls.log.Debug("Got message", "message", fmt.Sprintf("%+v", listing))
 	return &pb.CreateListingResponse{Id: 1}, nil
 }

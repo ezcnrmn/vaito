@@ -15,13 +15,22 @@ import (
 )
 
 func main() {
-	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
-
 	dbDsn := os.Getenv("DB_DSN")
 	dbMaxOpenConns := flag.Int("db-max-open-conns", 25, "PostgreSQL max open connections")
 	dbMaxIdleConns := flag.Int("db-max-idle-conns", 25, "PostgreSQL max idle connections")
 	dbMaxIdleTime := flag.Duration("db-max-idle-time", 15*time.Minute, "PostgreSQL max connection idle time")
+
+	showDebug := flag.Bool("debug-log", false, "Sets log level to Debug and shows source of message")
 	flag.Parse()
+
+	opts := &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}
+	if *showDebug {
+		opts.Level = slog.LevelDebug
+		opts.AddSource = true
+	}
+	logger := slog.New(slog.NewTextHandler(os.Stdout, opts))
 
 	db, err := openDB(dbDsn, *dbMaxOpenConns, *dbMaxIdleConns, *dbMaxIdleTime)
 	if err != nil {

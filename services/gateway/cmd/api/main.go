@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log/slog"
 	"os"
@@ -11,7 +12,17 @@ import (
 )
 
 func main() {
-	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	showDebug := flag.Bool("debug-log", false, "Sets log level to Debug and shows source of message")
+	flag.Parse()
+
+	opts := &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}
+	if *showDebug {
+		opts.Level = slog.LevelDebug
+		opts.AddSource = true
+	}
+	logger := slog.New(slog.NewTextHandler(os.Stdout, opts))
 
 	port := os.Getenv("GATEWAY_PORT")
 

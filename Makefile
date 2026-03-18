@@ -20,11 +20,11 @@ db/migrations/up: ## Apply db migrations
 
 .PHONY: run/gateway
 run/gateway: ## Runs gateway service
-	-go run -C services/gateway ./cmd/api/main.go
+	-go run -C services/gateway ./cmd/api/main.go -debug-log
 
 .PHONY: run/storage
 run/storage: ## Runs storage service
-	go run -C services/storage ./cmd/api/main.go
+	-go run -C services/storage ./cmd/api/main.go -debug-log
 
 PROTO_DIR := ./proto/storage/v1
 OUT_DIR := ./gen/go/storage
