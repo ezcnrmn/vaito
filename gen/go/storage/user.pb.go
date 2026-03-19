@@ -7,6 +7,7 @@
 package vaito
 
 import (
+	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -25,7 +26,8 @@ type CreateUserRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
-	PasswordHash  string                 `protobuf:"bytes,3,opt,name=password_hash,json=passwordHash,proto3" json:"password_hash,omitempty"`
+	PasswordHash  []byte                 `protobuf:"bytes,3,opt,name=password_hash,json=passwordHash,proto3" json:"password_hash,omitempty"`
+	CreatedAt     *timestamp.Timestamp   `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -74,11 +76,18 @@ func (x *CreateUserRequest) GetEmail() string {
 	return ""
 }
 
-func (x *CreateUserRequest) GetPasswordHash() string {
+func (x *CreateUserRequest) GetPasswordHash() []byte {
 	if x != nil {
 		return x.PasswordHash
 	}
-	return ""
+	return nil
+}
+
+func (x *CreateUserRequest) GetCreatedAt() *timestamp.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
 }
 
 type CreateUserResponse struct {
@@ -130,11 +139,13 @@ var File_user_proto protoreflect.FileDescriptor
 const file_user_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"user.proto\x12\bvaito.v1\"b\n" +
+	"user.proto\x12\bvaito.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x9d\x01\n" +
 	"\x11CreateUserRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12#\n" +
-	"\rpassword_hash\x18\x03 \x01(\tR\fpasswordHash\"$\n" +
+	"\rpassword_hash\x18\x03 \x01(\fR\fpasswordHash\x129\n" +
+	"\n" +
+	"created_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"$\n" +
 	"\x12CreateUserResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id2Q\n" +
 	"\x04User\x12I\n" +
@@ -155,17 +166,19 @@ func file_user_proto_rawDescGZIP() []byte {
 
 var file_user_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_user_proto_goTypes = []any{
-	(*CreateUserRequest)(nil),  // 0: vaito.v1.CreateUserRequest
-	(*CreateUserResponse)(nil), // 1: vaito.v1.CreateUserResponse
+	(*CreateUserRequest)(nil),   // 0: vaito.v1.CreateUserRequest
+	(*CreateUserResponse)(nil),  // 1: vaito.v1.CreateUserResponse
+	(*timestamp.Timestamp)(nil), // 2: google.protobuf.Timestamp
 }
 var file_user_proto_depIdxs = []int32{
-	0, // 0: vaito.v1.User.CreateUser:input_type -> vaito.v1.CreateUserRequest
-	1, // 1: vaito.v1.User.CreateUser:output_type -> vaito.v1.CreateUserResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	2, // 0: vaito.v1.CreateUserRequest.created_at:type_name -> google.protobuf.Timestamp
+	0, // 1: vaito.v1.User.CreateUser:input_type -> vaito.v1.CreateUserRequest
+	1, // 2: vaito.v1.User.CreateUser:output_type -> vaito.v1.CreateUserResponse
+	2, // [2:3] is the sub-list for method output_type
+	1, // [1:2] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_user_proto_init() }

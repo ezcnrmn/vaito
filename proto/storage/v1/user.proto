@@ -3,6 +3,8 @@ package vaito.v1;
 
 option go_package = "github.com/ezcnrmn/vaito/gen/go/vaito";
 
+import "google/protobuf/timestamp.proto";
+
 service User {
   rpc CreateUser (CreateUserRequest) returns (CreateUserResponse) {}
 }
@@ -10,7 +12,8 @@ service User {
 message CreateUserRequest {
   string name = 1;
   string email = 2;
-  string password_hash = 3;
+  bytes password_hash = 3;
+  google.protobuf.Timestamp created_at = 4;
 }
 
 message CreateUserResponse {

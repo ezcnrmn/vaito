@@ -7,6 +7,8 @@ import (
 	"io"
 	"net/http"
 	"strings"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type envelope map[string]any
@@ -76,4 +78,8 @@ func writeJSON(w http.ResponseWriter, status int, data envelope) error {
 	w.Write(js)
 
 	return nil
+}
+
+func hashPassword(password string) ([]byte, error) {
+	return bcrypt.GenerateFromPassword([]byte(password), 12)
 }

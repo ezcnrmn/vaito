@@ -39,8 +39,9 @@ gen/storage: ## Gens go code for storage .proto
 	fi
 
 	@for file in ${wildcard ${PROTO_DIR}/*.proto}; do \
+		echo "Generating for $$file"; \
 		protoc --proto_path=$(PROTO_DIR) --go_out=$$OUT_DIR --go_opt=paths=source_relative --go-grpc_out=$$OUT_DIR --go-grpc_opt=paths=source_relative $$file; \
 	done
 
-	cd $(OUT_DIR) && go mod tidy
+	@cd $(OUT_DIR) && go mod tidy
 

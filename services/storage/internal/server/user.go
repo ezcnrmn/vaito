@@ -3,32 +3,42 @@ package server
 import (
 	"context"
 	"database/sql"
-	"fmt"
+	"errors"
 	"log/slog"
 
 	pb "github.com/ezcnrmn/vaito/gen/go/storage"
+	"github.com/ezcnrmn/vaito/services/storage/internal/model"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type UserServer struct {
 	pb.UnimplementedUserServer
-	db  *sql.DB
-	log *slog.Logger
+
+	model model.UserModel
+	log   *slog.Logger
 }
 
 func NewUserServer(db *sql.DB, logger *slog.Logger) *UserServer {
-	return &UserServer{db: db, log: logger}
+	return &UserServer{model: model.UserModel{DB: db}, log: logger}
 }
 
 func (us *UserServer) CreateUser(_ context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
-	user := struct {
-		Name         string
-		Email        string
-		PasswordHash string
-	}{
+	user := model.User{
 		Name:         req.GetName(),
 		Email:        req.GetEmail(),
 		PasswordHash: req.GetPasswordHash(),
+		CreatedAt:    req.GetCreatedAt().AsTime(),
 	}
-	us.log.Debug("Got message", "message", fmt.Sprintf("%+v", user))
-	return &pb.CreateUserResponse{Id: 1}, nil
+
+	err := us.model.Insert(&user)
+	if err != nil {
+		if errors.Is(err, model.ErrDuplicateEmail) {
+			return nil, status.Error(codes.AlreadyExists, model.ErrDuplicateEmail.Error())
+		} else {
+			return nil, err
+		}
+	}
+
+	return &pb.CreateUserResponse{Id: user.ID}, nil
 }

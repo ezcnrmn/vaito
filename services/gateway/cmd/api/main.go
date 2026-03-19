@@ -26,8 +26,8 @@ func main() {
 
 	port := os.Getenv("GATEWAY_PORT")
 
-	storageUrl := fmt.Sprintf("%s:%s", os.Getenv("STORAGE_HOST"), os.Getenv("STORAGE_PORT"))
-	grpcClient, err := grpc.NewClient(storageUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	storageURL := fmt.Sprintf("%s:%s", os.Getenv("STORAGE_HOST"), os.Getenv("STORAGE_PORT"))
+	grpcClient, err := grpc.NewClient(storageURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)

@@ -2,7 +2,6 @@ package app
 
 import (
 	"database/sql"
-	"errors"
 	"log/slog"
 	"net"
 	"os"

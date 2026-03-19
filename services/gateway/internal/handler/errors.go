@@ -8,11 +8,18 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func sendError(w http.ResponseWriter, err error) {
+func sendError(w http.ResponseWriter, code int, message string) {
 	data := envelope{
-		"error": err.Error(),
+		"error": message,
 	}
-	writeJSON(w, http.StatusBadRequest, data)
+	writeJSON(w, code, data)
+}
+
+func sendInternalError(w http.ResponseWriter) {
+	data := envelope{
+		"error": "an unexpected error occurred while processing your request",
+	}
+	writeJSON(w, http.StatusInternalServerError, data)
 }
 
 func sendValidateError(w http.ResponseWriter, err error) {
@@ -29,6 +36,8 @@ func sendValidateError(w http.ResponseWriter, err error) {
 				data[e.Namespace()] = fmt.Sprintf("The %s field must satisfy the condition: %s", e.Field(), e.ActualTag())
 			}
 		}
+	} else {
+		panic("wrong error type")
 	}
 
 	writeJSON(w, http.StatusBadRequest, data)

@@ -6,6 +6,9 @@ import (
 	"time"
 
 	pb "github.com/ezcnrmn/vaito/gen/go/storage"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -17,7 +20,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	err := readJSON(w, r, &payload)
 	if err != nil {
-		sendError(w, err)
+		sendError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -27,21 +30,41 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	hash, err := hashPassword(payload.Password)
+	if err != nil {
+		sendInternalError(w)
+		h.log.Error(err.Error())
+		return
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
 	resp, err := h.userConn.CreateUser(ctx, &pb.CreateUserRequest{
 		Name:         payload.Name,
 		Email:        payload.Email,
-		PasswordHash: payload.Password,
+		PasswordHash: hash,
+		CreatedAt:    timestamppb.New(time.Now()),
 	})
 	if err != nil {
-		h.log.Debug(err.Error())
-		writeJSON(w, http.StatusInternalServerError, envelope{"error": err.Error()})
+		if s, ok := status.FromError(err); ok {
+			msg := s.Message()
+			code := s.Code()
+			switch code {
+			case codes.AlreadyExists:
+				sendError(w, http.StatusConflict, msg)
+			default:
+				h.log.Error(msg, "code", code)
+				sendInternalError(w)
+			}
+		} else {
+			h.log.Error(err.Error())
+			sendInternalError(w)
+		}
 		return
 	}
-	h.log.Debug(resp.String())
-	writeJSON(w, http.StatusInternalServerError, envelope{"success": resp.String()})
+
+	writeJSON(w, http.StatusOK, envelope{"userId": resp.String()})
 }
 
 func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {}
