@@ -5,18 +5,19 @@ import (
 	"reflect"
 	"strings"
 
-	pb "github.com/ezcnrmn/vaito/gen/go/storage"
+	pbListing "github.com/ezcnrmn/vaito/gen/go/listing"
+	pbUser "github.com/ezcnrmn/vaito/gen/go/user"
 	"github.com/go-playground/validator/v10"
 )
 
 type Handler struct {
 	log         *slog.Logger
 	validator   *validator.Validate
-	userConn    pb.UserClient
-	listingConn pb.ListingClient
+	userConn    pbUser.UserClient
+	listingConn pbListing.ListingClient
 }
 
-func New(logger *slog.Logger, userConn pb.UserClient, listingConn pb.ListingClient) *Handler {
+func New(logger *slog.Logger, userConn pbUser.UserClient, listingConn pbListing.ListingClient) *Handler {
 	validator := validator.New()
 	validator.RegisterValidation("lettersAndDigits", lettersAndDigits)
 	validator.RegisterTagNameFunc(func(fld reflect.StructField) string {

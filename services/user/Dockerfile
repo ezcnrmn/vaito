@@ -1,19 +1,15 @@
 FROM golang:1.26
 
 # NB: all paths are relative to project's root
-WORKDIR /usr/src/api/gen/go/listing
-COPY gen/go/listing ./
-RUN go mod download
-
 WORKDIR /usr/src/api/gen/go/user
 COPY gen/go/user ./
 RUN go mod download
 
-WORKDIR /usr/src/api/services/gateway
-COPY services/gateway/go.mod services/gateway/go.sum ./
+WORKDIR /usr/src/api/services/user
+COPY services/user/go.mod services/user/go.sum ./
 RUN go mod download
 
-COPY services/gateway/ .
+COPY services/user/ .
 RUN go build -v -o /usr/local/bin/api ./cmd/api/main.go
 
 CMD ["api"]

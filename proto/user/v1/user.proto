@@ -1,0 +1,34 @@
+syntax = "proto3";
+package vaito.v1;
+
+option go_package = "github.com/ezcnrmn/vaito/gen/go/user";
+
+import "google/protobuf/timestamp.proto";
+
+service User {
+  rpc CreateUser (CreateUserRequest) returns (UserResponse) {}
+  rpc UpdateUser (UpdateUserRequest) returns (UserResponse) {}
+  rpc GetUser (GetUserRequest) returns (UserResponse) {}
+}
+
+message CreateUserRequest {
+  string name = 1;
+  string email = 2;
+  bytes password_hash = 3;
+}
+
+message UpdateUserRequest {
+  optional string name = 1;
+  optional string email = 2;
+  optional bytes password_hash = 3;
+}
+
+message GetUserRequest {
+  int64 id = 1;
+}
+
+message UserResponse {
+  int64 id = 1;
+  string name = 2;
+  string email = 3;
+}

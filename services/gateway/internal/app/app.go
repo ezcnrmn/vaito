@@ -11,7 +11,8 @@ import (
 	"syscall"
 	"time"
 
-	pb "github.com/ezcnrmn/vaito/gen/go/storage"
+	pbListing "github.com/ezcnrmn/vaito/gen/go/listing"
+	pbUser "github.com/ezcnrmn/vaito/gen/go/user"
 	"google.golang.org/grpc"
 )
 
@@ -20,14 +21,14 @@ type App struct {
 	log        *slog.Logger
 	httpServer *http.Server
 	storage    struct {
-		user    pb.UserClient
-		listing pb.ListingClient
+		user    pbUser.UserClient
+		listing pbListing.ListingClient
 	}
 }
 
 func New(port string, logger *slog.Logger, grpcClient *grpc.ClientConn) *App {
-	userConn := pb.NewUserClient(grpcClient)
-	listingConn := pb.NewListingClient(grpcClient)
+	userConn := pbUser.NewUserClient(grpcClient)
+	listingConn := pbListing.NewListingClient(grpcClient)
 
 	app := &App{
 		port: port,

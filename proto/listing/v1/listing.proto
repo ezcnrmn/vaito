@@ -1,0 +1,69 @@
+syntax = "proto3";
+package vaito.v1;
+
+option go_package = "github.com/ezcnrmn/vaito/gen/go/listing";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+service Listing {
+  rpc CreateListing (CreateListingRequest) returns (ListingResponse) {}
+  rpc UpdateListing (UpdateListingRequest) returns (ListingResponse) {}
+  rpc DeleteListing (ListingRequestById) returns (google.protobuf.Empty) {}
+
+  rpc GetListing (ListingRequestById) returns (ListingResponse) {}
+  rpc GetAllActiveListings (PaginationRequest) returns (PaginationResponse) {}
+  rpc GetAllModerationListings (PaginationRequest) returns (PaginationResponse) {}
+  rpc GetListingsByUser (GetListingsByUserRequest) returns (PaginationResponse) {}
+
+  rpc SendListingToModeration (ListingRequestById) returns (google.protobuf.Empty) {}
+  rpc ActivateListing (ListingRequestById) returns (google.protobuf.Empty) {}
+  rpc DeactivateListing (ListingRequestById) returns (google.protobuf.Empty) {}
+}
+
+message CreateListingRequest {
+  string title = 1;
+  string description = 2;
+  int64 category_id = 3;
+  int64 user_id = 4;
+  int64 price = 5;
+}
+
+message UpdateListingRequest {
+  int64 id = 1;
+  optional string title = 2;
+  optional string description = 3;
+  optional int64 category_id = 4;
+  optional int64 price = 5;
+}
+
+message ListingRequestById {
+  int64 id = 1;
+}
+
+message PaginationRequest {
+  int32 page = 1;
+  int32 size = 2;
+}
+
+message GetListingsByUserRequest {
+  int64 id = 1;
+  PaginationRequest pagination = 2;
+}
+
+message PaginationResponse {
+  ListingResponse items = 1;
+  PaginationRequest pagination = 2;
+}
+
+message ListingResponse {
+  int64 id = 1;
+  string title = 2;
+  string description = 3;
+  string category = 4;
+  string user_name = 5;
+  string status = 6;
+  int64 price = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp published_at = 9;
+}

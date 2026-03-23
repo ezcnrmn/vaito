@@ -1,25 +1,9 @@
 services:
-  storage:
-    build:
-      context: .
-      dockerfile: ./services/storage/Dockerfile
-    container_name: vaito_storage
-    restart: unless-stopped
-    depends_on: 
-      postgres_db:
-        condition: service_healthy
-      migration:
-        condition: service_completed_successfully
-    networks:
-      - vaito_inner_net
-    env_file:
-      - .env
-
   gateway:
     build:
       context: .
       dockerfile: ./services/gateway/Dockerfile
-    container_name: vaito_gateway
+    container_name: vaito_gateway_service
     restart: unless-stopped
     networks:
       - vaito_inner_net
@@ -29,30 +13,84 @@ services:
     env_file:
       - .env
 
+  user:
+    build:
+      context: .
+      dockerfile: ./services/user/Dockerfile
+    container_name: vaito_user_service
+    restart: unless-stopped
+    depends_on: 
+      postgres_db:
+        condition: service_healthy
+      migration_user:
+        condition: service_completed_successfully
+    networks:
+      - vaito_inner_net
+    env_file:
+      - .env
+
+  listing:
+    build:
+      context: .
+      dockerfile: ./services/listing/Dockerfile
+    container_name: vaito_listing_service
+    restart: unless-stopped
+    depends_on: 
+      postgres_db:
+        condition: service_healthy
+      migration_listing:
+        condition: service_completed_successfully
+    networks:
+      - vaito_inner_net
+    env_file:
+      - .env
+
   postgres_db:
     image: postgres:18
     container_name: vaito_postgres
     restart: unless-stopped
     volumes:
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
       - vaito_postgres_db:/var/lib/postgresql
     networks:
       - vaito_inner_net
     ports:
       - '127.0.0.1:5432:5432'
-    env_file:
-      - .env
+    env_file: .env
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d postgres"]
       interval: 5s
       timeout: 3s
       retries: 5
 
-  migration:
+  migration_user:
     image: migrate/migrate
-    container_name: vaito_migration
-    command: ["-path=/migrations", "-database=${DB_DSN}", "up"]
+    container_name: vaito_migration_user
+    entrypoint: sh -c "sleep 5 && migrate -path=/migrations/ -database=${USER_DB_DSN} up"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 5
     volumes:
-      - ./migrations:/migrations
+      - ./migrations/user/:/migrations
+    networks:
+      - vaito_inner_net
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+
+  migration_listing:
+    image: migrate/migrate
+    container_name: vaito_migration_listing
+    entrypoint: sh -c "sleep 5 && migrate -path=/migrations/ -database=${LISTING_DB_DSN} up"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 5
+    volumes:
+      - ./migrations/listing/:/migrations
     networks:
       - vaito_inner_net
     depends_on:

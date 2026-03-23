@@ -5,10 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	pb "github.com/ezcnrmn/vaito/gen/go/storage"
+	pbUser "github.com/ezcnrmn/vaito/gen/go/user"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -40,11 +39,10 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	resp, err := h.userConn.CreateUser(ctx, &pb.CreateUserRequest{
+	resp, err := h.userConn.CreateUser(ctx, &pbUser.CreateUserRequest{
 		Name:         payload.Name,
 		Email:        payload.Email,
 		PasswordHash: hash,
-		CreatedAt:    timestamppb.New(time.Now()),
 	})
 	if err != nil {
 		if s, ok := status.FromError(err); ok {
@@ -69,4 +67,21 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {}
 
-func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request) {}
+func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request) {
+	var payload struct {
+		Email    string `json:"email" validate:"required,email"`
+		Password string `json:"password" validate:"required,min=8,max=100"`
+	}
+
+	err := readJSON(w, r, &payload)
+	if err != nil {
+		sendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	err = h.validator.Struct(payload)
+	if err != nil {
+		sendValidateError(w, err)
+		return
+	}
+}

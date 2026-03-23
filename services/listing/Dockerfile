@@ -5,15 +5,11 @@ WORKDIR /usr/src/api/gen/go/listing
 COPY gen/go/listing ./
 RUN go mod download
 
-WORKDIR /usr/src/api/gen/go/user
-COPY gen/go/user ./
+WORKDIR /usr/src/api/services/listing
+COPY services/listing/go.mod services/listing/go.sum ./
 RUN go mod download
 
-WORKDIR /usr/src/api/services/gateway
-COPY services/gateway/go.mod services/gateway/go.sum ./
-RUN go mod download
-
-COPY services/gateway/ .
+COPY services/listing/ .
 RUN go build -v -o /usr/local/bin/api ./cmd/api/main.go
 
 CMD ["api"]
