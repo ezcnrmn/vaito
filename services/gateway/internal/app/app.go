@@ -20,22 +20,22 @@ type App struct {
 	port       string
 	log        *slog.Logger
 	httpServer *http.Server
-	storage    struct {
+	services   struct {
 		user    pbUser.UserClient
 		listing pbListing.ListingClient
 	}
 }
 
-func New(port string, logger *slog.Logger, grpcClient *grpc.ClientConn) *App {
-	userConn := pbUser.NewUserClient(grpcClient)
-	listingConn := pbListing.NewListingClient(grpcClient)
+func New(port string, logger *slog.Logger, userClient, listingClient *grpc.ClientConn) *App {
+	userConn := pbUser.NewUserClient(userClient)
+	listingConn := pbListing.NewListingClient(listingClient)
 
 	app := &App{
 		port: port,
 		log:  logger,
 	}
-	app.storage.user = userConn
-	app.storage.listing = listingConn
+	app.services.user = userConn
+	app.services.listing = listingConn
 
 	routes := app.routes()
 
@@ -56,7 +56,7 @@ func (a *App) Run() error {
 		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 		s := <-sigChan
 
-		a.log.Info("shutting down gateway app", "signal", s.String())
+		a.log.Info("shutting down gateway service", "signal", s.String())
 
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
@@ -69,7 +69,7 @@ func (a *App) Run() error {
 		shutdownError <- nil
 	}()
 
-	a.log.Info("starting gateway app", "port", a.port)
+	a.log.Info("starting gateway service", "port", a.port)
 
 	err := a.httpServer.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
@@ -81,6 +81,6 @@ func (a *App) Run() error {
 		return err
 	}
 
-	a.log.Error("gateway app stopped")
+	a.log.Error("gateway service stopped")
 	return nil
 }

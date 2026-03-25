@@ -5,25 +5,26 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/ezcnrmn/vaito/services/gateway/internal/lib/jsonutil"
 	"github.com/go-playground/validator/v10"
 )
 
 func sendError(w http.ResponseWriter, code int, message string) {
-	data := envelope{
+	data := jsonutil.Envelope{
 		"error": message,
 	}
-	writeJSON(w, code, data)
+	jsonutil.WriteJSON(w, code, data)
 }
 
 func sendInternalError(w http.ResponseWriter) {
-	data := envelope{
+	data := jsonutil.Envelope{
 		"error": "an unexpected error occurred while processing your request",
 	}
-	writeJSON(w, http.StatusInternalServerError, data)
+	jsonutil.WriteJSON(w, http.StatusInternalServerError, data)
 }
 
 func sendValidateError(w http.ResponseWriter, err error) {
-	data := envelope{}
+	data := jsonutil.Envelope{}
 
 	var validateErrs validator.ValidationErrors
 	if errors.As(err, &validateErrs) {
@@ -40,5 +41,5 @@ func sendValidateError(w http.ResponseWriter, err error) {
 		panic("wrong error type")
 	}
 
-	writeJSON(w, http.StatusBadRequest, data)
+	jsonutil.WriteJSON(w, http.StatusBadRequest, data)
 }

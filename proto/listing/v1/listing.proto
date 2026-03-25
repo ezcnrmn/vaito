@@ -1,5 +1,6 @@
 syntax = "proto3";
-package vaito.v1;
+
+package listing.v1;
 
 option go_package = "github.com/ezcnrmn/vaito/gen/go/listing";
 
@@ -9,51 +10,35 @@ import "google/protobuf/empty.proto";
 service Listing {
   rpc CreateListing (CreateListingRequest) returns (ListingResponse) {}
   rpc UpdateListing (UpdateListingRequest) returns (ListingResponse) {}
-  rpc DeleteListing (ListingRequestById) returns (google.protobuf.Empty) {}
+  rpc DeleteListing (AuthenticatedListingRequest) returns (google.protobuf.Empty) {}
 
-  rpc GetListing (ListingRequestById) returns (ListingResponse) {}
-  rpc GetAllActiveListings (PaginationRequest) returns (PaginationResponse) {}
-  rpc GetAllModerationListings (PaginationRequest) returns (PaginationResponse) {}
-  rpc GetListingsByUser (GetListingsByUserRequest) returns (PaginationResponse) {}
+  rpc GetListing (GetListingRequest) returns (ListingResponse) {}
+  rpc GetUserListing (AuthenticatedListingRequest) returns (ListingResponse) {}
+  rpc GetActiveListings (GetActiveListingsRequest) returns (ListingPaginatedResponse) {}
+  rpc GetModerationListings (GetModerationListingsRequest) returns (ListingPaginatedResponse) {}
+  rpc GetListingsByUser (GetListingsByUserRequest) returns (ListingPaginatedResponse) {}
 
-  rpc SendListingToModeration (ListingRequestById) returns (google.protobuf.Empty) {}
-  rpc ActivateListing (ListingRequestById) returns (google.protobuf.Empty) {}
-  rpc DeactivateListing (ListingRequestById) returns (google.protobuf.Empty) {}
+  rpc SendListingToModeration (AuthenticatedListingRequest) returns (google.protobuf.Empty) {}
+  rpc ActivateListing (AuthenticatedListingRequest) returns (google.protobuf.Empty) {}
+  rpc DeactivateListing (AuthenticatedListingRequest) returns (google.protobuf.Empty) {}
+
+  rpc ActivateListingByModeration (AuthenticatedListingRequest) returns (google.protobuf.Empty) {}
+  rpc DeactivateListingByModeration (AuthenticatedListingRequest) returns (google.protobuf.Empty) {}
+
+  rpc GetCategories (google.protobuf.Empty) returns (CategoriesResponse) {}
+}
+
+message AuthenticationRequest {
+  bytes token = 1;
 }
 
 message CreateListingRequest {
-  string title = 1;
-  string description = 2;
-  int64 category_id = 3;
-  int64 user_id = 4;
+  AuthenticationRequest authentication = 1;
+
+  string title = 2;
+  string description = 3;
+  int64 category_id = 4;
   int64 price = 5;
-}
-
-message UpdateListingRequest {
-  int64 id = 1;
-  optional string title = 2;
-  optional string description = 3;
-  optional int64 category_id = 4;
-  optional int64 price = 5;
-}
-
-message ListingRequestById {
-  int64 id = 1;
-}
-
-message PaginationRequest {
-  int32 page = 1;
-  int32 size = 2;
-}
-
-message GetListingsByUserRequest {
-  int64 id = 1;
-  PaginationRequest pagination = 2;
-}
-
-message PaginationResponse {
-  ListingResponse items = 1;
-  PaginationRequest pagination = 2;
 }
 
 message ListingResponse {
@@ -61,9 +46,77 @@ message ListingResponse {
   string title = 2;
   string description = 3;
   string category = 4;
-  string user_name = 5;
+  int64 user_id = 5;
   string status = 6;
   int64 price = 7;
   google.protobuf.Timestamp created_at = 8;
   google.protobuf.Timestamp published_at = 9;
 }
+
+message UpdateListingRequest {
+  AuthenticationRequest authentication = 1;
+
+  int64 id = 2;
+
+  optional string title = 3;
+  optional string description = 4;
+  optional int64 category_id = 5;
+  optional int64 price = 6;
+}
+
+message AuthenticatedListingRequest {
+  AuthenticationRequest authentication = 1;
+
+  int64 id = 2;
+}
+
+message GetListingRequest {
+  int64 id = 1;
+}
+
+message GetActiveListingsRequest {
+  int32 page = 1;
+  int32 size = 2;
+}
+
+message ListingPaginatedResponse {
+  repeated ListingResponse items = 1;
+
+  PaginationResponse pagination = 2;
+}
+
+message GetModerationListingsRequest {
+  AuthenticationRequest authentication = 1;
+
+  int32 page = 2;
+  int32 size = 3;
+}
+
+message PaginationResponse {
+  int32 page = 1;
+  int32 size = 2;
+  int32 total = 3;
+}
+
+message GetListingsByUserRequest {
+  AuthenticationRequest authentication = 1;
+
+  int64 id = 2;
+
+  message PaginationRequest {
+    int32 page = 1;
+    int32 size = 2;
+  }
+
+  PaginationRequest pagination = 3;
+}
+
+message CategoriesResponse {
+  message Category {
+    int64 id = 1;
+    string name = 2;
+  }
+
+  repeated Category categories = 1;
+}
+

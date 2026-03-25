@@ -2,28 +2,46 @@ package app
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/ezcnrmn/vaito/services/gateway/internal/handler"
+	"github.com/ezcnrmn/vaito/services/gateway/internal/lib/contextutil"
+	"github.com/ezcnrmn/vaito/services/gateway/internal/lib/jsonutil"
 	"github.com/julienschmidt/httprouter"
 )
 
+const apiV1 = "/api/v1"
+
 func (a *App) routes() http.Handler {
-	handler := handler.New(a.log, a.storage.user, a.storage.listing)
+	handler := handler.New(a.log, a.services.user, a.services.listing)
 	routes := httprouter.New()
 
-	routes.HandlerFunc(http.MethodGet, "/v1/healthcheck", handler.Healthcheck)
+	routes.HandlerFunc(http.MethodGet, apiV1+"/healthcheck", handler.Healthcheck)
 
-	routes.HandlerFunc(http.MethodPost, "/v1/users", handler.CreateUser)
-	routes.HandlerFunc(http.MethodPut, "/v1/users/:id", handler.UpdateUser)
-	routes.HandlerFunc(http.MethodGet, "/v1/users/authenticate", handler.Authenticate)
+	routes.HandlerFunc(http.MethodPost, apiV1+"/users", handler.CreateUser)
+	routes.HandlerFunc(http.MethodPatch, apiV1+"/users/:id", handler.UpdateUser)
+	routes.HandlerFunc(http.MethodPut, apiV1+"/users/:id/update-password", handler.UpdateUserPassword)
+	routes.HandlerFunc(http.MethodGet, apiV1+"/users/:id", handler.GetUser)
+	routes.HandlerFunc(http.MethodPost, apiV1+"/users/login", handler.AuthenticateUser)
 
-	routes.HandlerFunc(http.MethodPost, "/v1/listings", handler.CreateListings)
-	routes.HandlerFunc(http.MethodGet, "/v1/listings/:id", handler.ShowListings)
-	routes.HandlerFunc(http.MethodPut, "/v1/listings/:id", handler.UpdateListings)
-	routes.HandlerFunc(http.MethodDelete, "/v1/listings/:id", handler.DeleteListings)
-	routes.HandlerFunc(http.MethodGet, "/v1/listings", handler.ListListings)
+	routes.HandlerFunc(http.MethodGet, apiV1+"/users/:id/listings", handler.GetUserListings)
 
-	return a.recoverPanic(routes)
+	routes.HandlerFunc(http.MethodPost, apiV1+"/listings", handler.CreateListing)
+	routes.HandlerFunc(http.MethodPatch, apiV1+"/listings/:id", handler.UpdateListing)
+	routes.HandlerFunc(http.MethodGet, apiV1+"/listings/:id", handler.GetListing)
+	routes.HandlerFunc(http.MethodDelete, apiV1+"/listings/:id", handler.DeleteListing)
+	routes.HandlerFunc(http.MethodPost, apiV1+"/listings/:id/moderation", handler.SendListingToModeration)
+	routes.HandlerFunc(http.MethodPost, apiV1+"/listings/:id/activate", handler.ActivateListing)
+	routes.HandlerFunc(http.MethodPost, apiV1+"/listings/:id/deactivate", handler.DeactivateListing)
+
+	routes.HandlerFunc(http.MethodGet, apiV1+"/listings", handler.GetListings)
+	routes.HandlerFunc(http.MethodGet, apiV1+"/listings/categories", handler.GetListingCategories)
+
+	routes.HandlerFunc(http.MethodPost, apiV1+"/moderation/listings", handler.ModerationListings)
+	routes.HandlerFunc(http.MethodPost, apiV1+"/moderation/listings/:id/activate", handler.ModerationActivateListing)
+	routes.HandlerFunc(http.MethodPost, apiV1+"/moderation/listings/:id/deactivate", handler.ModerationDeactivateListing)
+
+	return a.recoverPanic(validateToken(routes))
 }
 
 func (a *App) recoverPanic(next http.Handler) http.Handler {
@@ -35,6 +53,32 @@ func (a *App) recoverPanic(next http.Handler) http.Handler {
 			}
 		}()
 
+		next.ServeHTTP(w, r)
+	})
+}
+
+func validateToken(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Vary", "Authorization")
+
+		authorizationHeader := r.Header.Get("Authorization")
+		if authorizationHeader == "" {
+			r = contextutil.SetToken(r, []byte(""))
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		headerParts := strings.Split(authorizationHeader, " ")
+		if (len(headerParts) != 2) || (len(headerParts) == 2 && (headerParts[0] != "Bearer" || len(headerParts[1]) != 26)) {
+			w.Header().Set("WWW-Authenticate", "Bearer")
+			msg := jsonutil.Envelope{"error": "invalid or missing authentication token"}
+			jsonutil.WriteJSON(w, http.StatusUnauthorized, msg)
+			return
+		}
+
+		token := headerParts[1]
+
+		r = contextutil.SetToken(r, []byte(token))
 		next.ServeHTTP(w, r)
 	})
 }

@@ -1,34 +1,71 @@
 syntax = "proto3";
-package vaito.v1;
+
+package user.v1;
 
 option go_package = "github.com/ezcnrmn/vaito/gen/go/user";
 
-import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 service User {
   rpc CreateUser (CreateUserRequest) returns (UserResponse) {}
   rpc UpdateUser (UpdateUserRequest) returns (UserResponse) {}
+  rpc UpdateUserPassword (UpdateUserPasswordRequest) returns (google.protobuf.Empty) {}
   rpc GetUser (GetUserRequest) returns (UserResponse) {}
+
+  rpc AuthenticateUser (AuthenticateUserRequest) returns (TokenResponse) {}
+  rpc GetUserIDByToken (TokenRequest) returns (GetUserIDByTokenResponse) {}
+  rpc GetUserPermissionsByToken (TokenRequest) returns (GetUserPermissionsByTokenResponse) {}
 }
 
 message CreateUserRequest {
   string name = 1;
   string email = 2;
-  bytes password_hash = 3;
-}
-
-message UpdateUserRequest {
-  optional string name = 1;
-  optional string email = 2;
-  optional bytes password_hash = 3;
-}
-
-message GetUserRequest {
-  int64 id = 1;
+  string password = 3;
 }
 
 message UserResponse {
   int64 id = 1;
   string name = 2;
   string email = 3;
+  string role_name = 4;
+}
+
+message TokenRequest {
+  bytes token = 1;
+}
+
+message UpdateUserRequest {
+  optional string name = 1;
+  optional string email = 2;
+
+  TokenRequest token = 3;
+}
+
+message UpdateUserPasswordRequest {
+  bytes password = 1;
+
+  TokenRequest token = 2;
+}
+
+message GetUserRequest {
+  int64 id = 1;
+}
+
+message AuthenticateUserRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message TokenResponse {
+  bytes token = 1;
+}
+
+message GetUserIDByTokenResponse {
+  int64 user_id = 1;
+}
+
+message GetUserPermissionsByTokenResponse {
+  GetUserIDByTokenResponse user = 1;
+
+  repeated string permissions = 2;
 }

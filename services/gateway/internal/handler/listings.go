@@ -2,11 +2,7 @@ package handler
 
 import "net/http"
 
-func (h *Handler) ListListings(w http.ResponseWriter, r *http.Request) {}
-
-func (h *Handler) ShowListings(w http.ResponseWriter, r *http.Request) {}
-
-func (h *Handler) CreateListings(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateListing(w http.ResponseWriter, r *http.Request) {
 	var payload struct {
 		Title       string `json:"title"`
 		Description string `json:"description"`
@@ -16,6 +12,18 @@ func (h *Handler) CreateListings(w http.ResponseWriter, r *http.Request) {
 	_ = payload
 }
 
-func (h *Handler) UpdateListings(w http.ResponseWriter, r *http.Request) {}
+func (h *Handler) UpdateListing(w http.ResponseWriter, r *http.Request) {}
 
-func (h *Handler) DeleteListings(w http.ResponseWriter, r *http.Request) {}
+func (h *Handler) GetListing(w http.ResponseWriter, r *http.Request) {}
+
+func (h *Handler) DeleteListing(w http.ResponseWriter, r *http.Request) {}
+
+func (h *Handler) SendListingToModeration(w http.ResponseWriter, r *http.Request) {}
+
+func (h *Handler) ActivateListing(w http.ResponseWriter, r *http.Request) {}
+
+func (h *Handler) DeactivateListing(w http.ResponseWriter, r *http.Request) {}
+
+func (h *Handler) GetListings(w http.ResponseWriter, r *http.Request) {}
+
+func (h *Handler) GetListingCategories(w http.ResponseWriter, r *http.Request) {}

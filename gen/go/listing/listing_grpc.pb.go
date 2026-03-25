@@ -20,16 +20,20 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Listing_CreateListing_FullMethodName            = "/vaito.v1.Listing/CreateListing"
-	Listing_UpdateListing_FullMethodName            = "/vaito.v1.Listing/UpdateListing"
-	Listing_DeleteListing_FullMethodName            = "/vaito.v1.Listing/DeleteListing"
-	Listing_GetListing_FullMethodName               = "/vaito.v1.Listing/GetListing"
-	Listing_GetAllActiveListings_FullMethodName     = "/vaito.v1.Listing/GetAllActiveListings"
-	Listing_GetAllModerationListings_FullMethodName = "/vaito.v1.Listing/GetAllModerationListings"
-	Listing_GetListingsByUser_FullMethodName        = "/vaito.v1.Listing/GetListingsByUser"
-	Listing_SendListingToModeration_FullMethodName  = "/vaito.v1.Listing/SendListingToModeration"
-	Listing_ActivateListing_FullMethodName          = "/vaito.v1.Listing/ActivateListing"
-	Listing_DeactivateListing_FullMethodName        = "/vaito.v1.Listing/DeactivateListing"
+	Listing_CreateListing_FullMethodName                 = "/listing.v1.Listing/CreateListing"
+	Listing_UpdateListing_FullMethodName                 = "/listing.v1.Listing/UpdateListing"
+	Listing_DeleteListing_FullMethodName                 = "/listing.v1.Listing/DeleteListing"
+	Listing_GetListing_FullMethodName                    = "/listing.v1.Listing/GetListing"
+	Listing_GetUserListing_FullMethodName                = "/listing.v1.Listing/GetUserListing"
+	Listing_GetActiveListings_FullMethodName             = "/listing.v1.Listing/GetActiveListings"
+	Listing_GetModerationListings_FullMethodName         = "/listing.v1.Listing/GetModerationListings"
+	Listing_GetListingsByUser_FullMethodName             = "/listing.v1.Listing/GetListingsByUser"
+	Listing_SendListingToModeration_FullMethodName       = "/listing.v1.Listing/SendListingToModeration"
+	Listing_ActivateListing_FullMethodName               = "/listing.v1.Listing/ActivateListing"
+	Listing_DeactivateListing_FullMethodName             = "/listing.v1.Listing/DeactivateListing"
+	Listing_ActivateListingByModeration_FullMethodName   = "/listing.v1.Listing/ActivateListingByModeration"
+	Listing_DeactivateListingByModeration_FullMethodName = "/listing.v1.Listing/DeactivateListingByModeration"
+	Listing_GetCategories_FullMethodName                 = "/listing.v1.Listing/GetCategories"
 )
 
 // ListingClient is the client API for Listing service.
@@ -38,14 +42,18 @@ const (
 type ListingClient interface {
 	CreateListing(ctx context.Context, in *CreateListingRequest, opts ...grpc.CallOption) (*ListingResponse, error)
 	UpdateListing(ctx context.Context, in *UpdateListingRequest, opts ...grpc.CallOption) (*ListingResponse, error)
-	DeleteListing(ctx context.Context, in *ListingRequestById, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	GetListing(ctx context.Context, in *ListingRequestById, opts ...grpc.CallOption) (*ListingResponse, error)
-	GetAllActiveListings(ctx context.Context, in *PaginationRequest, opts ...grpc.CallOption) (*PaginationResponse, error)
-	GetAllModerationListings(ctx context.Context, in *PaginationRequest, opts ...grpc.CallOption) (*PaginationResponse, error)
-	GetListingsByUser(ctx context.Context, in *GetListingsByUserRequest, opts ...grpc.CallOption) (*PaginationResponse, error)
-	SendListingToModeration(ctx context.Context, in *ListingRequestById, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	ActivateListing(ctx context.Context, in *ListingRequestById, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	DeactivateListing(ctx context.Context, in *ListingRequestById, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeleteListing(ctx context.Context, in *AuthenticatedListingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	GetListing(ctx context.Context, in *GetListingRequest, opts ...grpc.CallOption) (*ListingResponse, error)
+	GetUserListing(ctx context.Context, in *AuthenticatedListingRequest, opts ...grpc.CallOption) (*ListingResponse, error)
+	GetActiveListings(ctx context.Context, in *GetActiveListingsRequest, opts ...grpc.CallOption) (*ListingPaginatedResponse, error)
+	GetModerationListings(ctx context.Context, in *GetModerationListingsRequest, opts ...grpc.CallOption) (*ListingPaginatedResponse, error)
+	GetListingsByUser(ctx context.Context, in *GetListingsByUserRequest, opts ...grpc.CallOption) (*ListingPaginatedResponse, error)
+	SendListingToModeration(ctx context.Context, in *AuthenticatedListingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ActivateListing(ctx context.Context, in *AuthenticatedListingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeactivateListing(ctx context.Context, in *AuthenticatedListingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ActivateListingByModeration(ctx context.Context, in *AuthenticatedListingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeactivateListingByModeration(ctx context.Context, in *AuthenticatedListingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	GetCategories(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*CategoriesResponse, error)
 }
 
 type listingClient struct {
@@ -76,7 +84,7 @@ func (c *listingClient) UpdateListing(ctx context.Context, in *UpdateListingRequ
 	return out, nil
 }
 
-func (c *listingClient) DeleteListing(ctx context.Context, in *ListingRequestById, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *listingClient) DeleteListing(ctx context.Context, in *AuthenticatedListingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, Listing_DeleteListing_FullMethodName, in, out, cOpts...)
@@ -86,7 +94,7 @@ func (c *listingClient) DeleteListing(ctx context.Context, in *ListingRequestByI
 	return out, nil
 }
 
-func (c *listingClient) GetListing(ctx context.Context, in *ListingRequestById, opts ...grpc.CallOption) (*ListingResponse, error) {
+func (c *listingClient) GetListing(ctx context.Context, in *GetListingRequest, opts ...grpc.CallOption) (*ListingResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListingResponse)
 	err := c.cc.Invoke(ctx, Listing_GetListing_FullMethodName, in, out, cOpts...)
@@ -96,29 +104,39 @@ func (c *listingClient) GetListing(ctx context.Context, in *ListingRequestById, 
 	return out, nil
 }
 
-func (c *listingClient) GetAllActiveListings(ctx context.Context, in *PaginationRequest, opts ...grpc.CallOption) (*PaginationResponse, error) {
+func (c *listingClient) GetUserListing(ctx context.Context, in *AuthenticatedListingRequest, opts ...grpc.CallOption) (*ListingResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(PaginationResponse)
-	err := c.cc.Invoke(ctx, Listing_GetAllActiveListings_FullMethodName, in, out, cOpts...)
+	out := new(ListingResponse)
+	err := c.cc.Invoke(ctx, Listing_GetUserListing_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *listingClient) GetAllModerationListings(ctx context.Context, in *PaginationRequest, opts ...grpc.CallOption) (*PaginationResponse, error) {
+func (c *listingClient) GetActiveListings(ctx context.Context, in *GetActiveListingsRequest, opts ...grpc.CallOption) (*ListingPaginatedResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(PaginationResponse)
-	err := c.cc.Invoke(ctx, Listing_GetAllModerationListings_FullMethodName, in, out, cOpts...)
+	out := new(ListingPaginatedResponse)
+	err := c.cc.Invoke(ctx, Listing_GetActiveListings_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *listingClient) GetListingsByUser(ctx context.Context, in *GetListingsByUserRequest, opts ...grpc.CallOption) (*PaginationResponse, error) {
+func (c *listingClient) GetModerationListings(ctx context.Context, in *GetModerationListingsRequest, opts ...grpc.CallOption) (*ListingPaginatedResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(PaginationResponse)
+	out := new(ListingPaginatedResponse)
+	err := c.cc.Invoke(ctx, Listing_GetModerationListings_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *listingClient) GetListingsByUser(ctx context.Context, in *GetListingsByUserRequest, opts ...grpc.CallOption) (*ListingPaginatedResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListingPaginatedResponse)
 	err := c.cc.Invoke(ctx, Listing_GetListingsByUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -126,7 +144,7 @@ func (c *listingClient) GetListingsByUser(ctx context.Context, in *GetListingsBy
 	return out, nil
 }
 
-func (c *listingClient) SendListingToModeration(ctx context.Context, in *ListingRequestById, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *listingClient) SendListingToModeration(ctx context.Context, in *AuthenticatedListingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, Listing_SendListingToModeration_FullMethodName, in, out, cOpts...)
@@ -136,7 +154,7 @@ func (c *listingClient) SendListingToModeration(ctx context.Context, in *Listing
 	return out, nil
 }
 
-func (c *listingClient) ActivateListing(ctx context.Context, in *ListingRequestById, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *listingClient) ActivateListing(ctx context.Context, in *AuthenticatedListingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, Listing_ActivateListing_FullMethodName, in, out, cOpts...)
@@ -146,10 +164,40 @@ func (c *listingClient) ActivateListing(ctx context.Context, in *ListingRequestB
 	return out, nil
 }
 
-func (c *listingClient) DeactivateListing(ctx context.Context, in *ListingRequestById, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *listingClient) DeactivateListing(ctx context.Context, in *AuthenticatedListingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, Listing_DeactivateListing_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *listingClient) ActivateListingByModeration(ctx context.Context, in *AuthenticatedListingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Listing_ActivateListingByModeration_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *listingClient) DeactivateListingByModeration(ctx context.Context, in *AuthenticatedListingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Listing_DeactivateListingByModeration_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *listingClient) GetCategories(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*CategoriesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CategoriesResponse)
+	err := c.cc.Invoke(ctx, Listing_GetCategories_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -162,14 +210,18 @@ func (c *listingClient) DeactivateListing(ctx context.Context, in *ListingReques
 type ListingServer interface {
 	CreateListing(context.Context, *CreateListingRequest) (*ListingResponse, error)
 	UpdateListing(context.Context, *UpdateListingRequest) (*ListingResponse, error)
-	DeleteListing(context.Context, *ListingRequestById) (*emptypb.Empty, error)
-	GetListing(context.Context, *ListingRequestById) (*ListingResponse, error)
-	GetAllActiveListings(context.Context, *PaginationRequest) (*PaginationResponse, error)
-	GetAllModerationListings(context.Context, *PaginationRequest) (*PaginationResponse, error)
-	GetListingsByUser(context.Context, *GetListingsByUserRequest) (*PaginationResponse, error)
-	SendListingToModeration(context.Context, *ListingRequestById) (*emptypb.Empty, error)
-	ActivateListing(context.Context, *ListingRequestById) (*emptypb.Empty, error)
-	DeactivateListing(context.Context, *ListingRequestById) (*emptypb.Empty, error)
+	DeleteListing(context.Context, *AuthenticatedListingRequest) (*emptypb.Empty, error)
+	GetListing(context.Context, *GetListingRequest) (*ListingResponse, error)
+	GetUserListing(context.Context, *AuthenticatedListingRequest) (*ListingResponse, error)
+	GetActiveListings(context.Context, *GetActiveListingsRequest) (*ListingPaginatedResponse, error)
+	GetModerationListings(context.Context, *GetModerationListingsRequest) (*ListingPaginatedResponse, error)
+	GetListingsByUser(context.Context, *GetListingsByUserRequest) (*ListingPaginatedResponse, error)
+	SendListingToModeration(context.Context, *AuthenticatedListingRequest) (*emptypb.Empty, error)
+	ActivateListing(context.Context, *AuthenticatedListingRequest) (*emptypb.Empty, error)
+	DeactivateListing(context.Context, *AuthenticatedListingRequest) (*emptypb.Empty, error)
+	ActivateListingByModeration(context.Context, *AuthenticatedListingRequest) (*emptypb.Empty, error)
+	DeactivateListingByModeration(context.Context, *AuthenticatedListingRequest) (*emptypb.Empty, error)
+	GetCategories(context.Context, *emptypb.Empty) (*CategoriesResponse, error)
 	mustEmbedUnimplementedListingServer()
 }
 
@@ -186,29 +238,41 @@ func (UnimplementedListingServer) CreateListing(context.Context, *CreateListingR
 func (UnimplementedListingServer) UpdateListing(context.Context, *UpdateListingRequest) (*ListingResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateListing not implemented")
 }
-func (UnimplementedListingServer) DeleteListing(context.Context, *ListingRequestById) (*emptypb.Empty, error) {
+func (UnimplementedListingServer) DeleteListing(context.Context, *AuthenticatedListingRequest) (*emptypb.Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteListing not implemented")
 }
-func (UnimplementedListingServer) GetListing(context.Context, *ListingRequestById) (*ListingResponse, error) {
+func (UnimplementedListingServer) GetListing(context.Context, *GetListingRequest) (*ListingResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetListing not implemented")
 }
-func (UnimplementedListingServer) GetAllActiveListings(context.Context, *PaginationRequest) (*PaginationResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetAllActiveListings not implemented")
+func (UnimplementedListingServer) GetUserListing(context.Context, *AuthenticatedListingRequest) (*ListingResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetUserListing not implemented")
 }
-func (UnimplementedListingServer) GetAllModerationListings(context.Context, *PaginationRequest) (*PaginationResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetAllModerationListings not implemented")
+func (UnimplementedListingServer) GetActiveListings(context.Context, *GetActiveListingsRequest) (*ListingPaginatedResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetActiveListings not implemented")
 }
-func (UnimplementedListingServer) GetListingsByUser(context.Context, *GetListingsByUserRequest) (*PaginationResponse, error) {
+func (UnimplementedListingServer) GetModerationListings(context.Context, *GetModerationListingsRequest) (*ListingPaginatedResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetModerationListings not implemented")
+}
+func (UnimplementedListingServer) GetListingsByUser(context.Context, *GetListingsByUserRequest) (*ListingPaginatedResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetListingsByUser not implemented")
 }
-func (UnimplementedListingServer) SendListingToModeration(context.Context, *ListingRequestById) (*emptypb.Empty, error) {
+func (UnimplementedListingServer) SendListingToModeration(context.Context, *AuthenticatedListingRequest) (*emptypb.Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method SendListingToModeration not implemented")
 }
-func (UnimplementedListingServer) ActivateListing(context.Context, *ListingRequestById) (*emptypb.Empty, error) {
+func (UnimplementedListingServer) ActivateListing(context.Context, *AuthenticatedListingRequest) (*emptypb.Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method ActivateListing not implemented")
 }
-func (UnimplementedListingServer) DeactivateListing(context.Context, *ListingRequestById) (*emptypb.Empty, error) {
+func (UnimplementedListingServer) DeactivateListing(context.Context, *AuthenticatedListingRequest) (*emptypb.Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeactivateListing not implemented")
+}
+func (UnimplementedListingServer) ActivateListingByModeration(context.Context, *AuthenticatedListingRequest) (*emptypb.Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method ActivateListingByModeration not implemented")
+}
+func (UnimplementedListingServer) DeactivateListingByModeration(context.Context, *AuthenticatedListingRequest) (*emptypb.Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeactivateListingByModeration not implemented")
+}
+func (UnimplementedListingServer) GetCategories(context.Context, *emptypb.Empty) (*CategoriesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetCategories not implemented")
 }
 func (UnimplementedListingServer) mustEmbedUnimplementedListingServer() {}
 func (UnimplementedListingServer) testEmbeddedByValue()                 {}
@@ -268,7 +332,7 @@ func _Listing_UpdateListing_Handler(srv interface{}, ctx context.Context, dec fu
 }
 
 func _Listing_DeleteListing_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListingRequestById)
+	in := new(AuthenticatedListingRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -280,13 +344,13 @@ func _Listing_DeleteListing_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: Listing_DeleteListing_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ListingServer).DeleteListing(ctx, req.(*ListingRequestById))
+		return srv.(ListingServer).DeleteListing(ctx, req.(*AuthenticatedListingRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Listing_GetListing_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListingRequestById)
+	in := new(GetListingRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -298,43 +362,61 @@ func _Listing_GetListing_Handler(srv interface{}, ctx context.Context, dec func(
 		FullMethod: Listing_GetListing_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ListingServer).GetListing(ctx, req.(*ListingRequestById))
+		return srv.(ListingServer).GetListing(ctx, req.(*GetListingRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Listing_GetAllActiveListings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PaginationRequest)
+func _Listing_GetUserListing_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthenticatedListingRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ListingServer).GetAllActiveListings(ctx, in)
+		return srv.(ListingServer).GetUserListing(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Listing_GetAllActiveListings_FullMethodName,
+		FullMethod: Listing_GetUserListing_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ListingServer).GetAllActiveListings(ctx, req.(*PaginationRequest))
+		return srv.(ListingServer).GetUserListing(ctx, req.(*AuthenticatedListingRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Listing_GetAllModerationListings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PaginationRequest)
+func _Listing_GetActiveListings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetActiveListingsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ListingServer).GetAllModerationListings(ctx, in)
+		return srv.(ListingServer).GetActiveListings(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Listing_GetAllModerationListings_FullMethodName,
+		FullMethod: Listing_GetActiveListings_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ListingServer).GetAllModerationListings(ctx, req.(*PaginationRequest))
+		return srv.(ListingServer).GetActiveListings(ctx, req.(*GetActiveListingsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Listing_GetModerationListings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetModerationListingsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ListingServer).GetModerationListings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Listing_GetModerationListings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ListingServer).GetModerationListings(ctx, req.(*GetModerationListingsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -358,7 +440,7 @@ func _Listing_GetListingsByUser_Handler(srv interface{}, ctx context.Context, de
 }
 
 func _Listing_SendListingToModeration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListingRequestById)
+	in := new(AuthenticatedListingRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -370,13 +452,13 @@ func _Listing_SendListingToModeration_Handler(srv interface{}, ctx context.Conte
 		FullMethod: Listing_SendListingToModeration_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ListingServer).SendListingToModeration(ctx, req.(*ListingRequestById))
+		return srv.(ListingServer).SendListingToModeration(ctx, req.(*AuthenticatedListingRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Listing_ActivateListing_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListingRequestById)
+	in := new(AuthenticatedListingRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -388,13 +470,13 @@ func _Listing_ActivateListing_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: Listing_ActivateListing_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ListingServer).ActivateListing(ctx, req.(*ListingRequestById))
+		return srv.(ListingServer).ActivateListing(ctx, req.(*AuthenticatedListingRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Listing_DeactivateListing_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListingRequestById)
+	in := new(AuthenticatedListingRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -406,7 +488,61 @@ func _Listing_DeactivateListing_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: Listing_DeactivateListing_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ListingServer).DeactivateListing(ctx, req.(*ListingRequestById))
+		return srv.(ListingServer).DeactivateListing(ctx, req.(*AuthenticatedListingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Listing_ActivateListingByModeration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthenticatedListingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ListingServer).ActivateListingByModeration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Listing_ActivateListingByModeration_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ListingServer).ActivateListingByModeration(ctx, req.(*AuthenticatedListingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Listing_DeactivateListingByModeration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthenticatedListingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ListingServer).DeactivateListingByModeration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Listing_DeactivateListingByModeration_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ListingServer).DeactivateListingByModeration(ctx, req.(*AuthenticatedListingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Listing_GetCategories_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ListingServer).GetCategories(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Listing_GetCategories_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ListingServer).GetCategories(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -415,7 +551,7 @@ func _Listing_DeactivateListing_Handler(srv interface{}, ctx context.Context, de
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Listing_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "vaito.v1.Listing",
+	ServiceName: "listing.v1.Listing",
 	HandlerType: (*ListingServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -435,12 +571,16 @@ var Listing_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Listing_GetListing_Handler,
 		},
 		{
-			MethodName: "GetAllActiveListings",
-			Handler:    _Listing_GetAllActiveListings_Handler,
+			MethodName: "GetUserListing",
+			Handler:    _Listing_GetUserListing_Handler,
 		},
 		{
-			MethodName: "GetAllModerationListings",
-			Handler:    _Listing_GetAllModerationListings_Handler,
+			MethodName: "GetActiveListings",
+			Handler:    _Listing_GetActiveListings_Handler,
+		},
+		{
+			MethodName: "GetModerationListings",
+			Handler:    _Listing_GetModerationListings_Handler,
 		},
 		{
 			MethodName: "GetListingsByUser",
@@ -457,6 +597,18 @@ var Listing_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeactivateListing",
 			Handler:    _Listing_DeactivateListing_Handler,
+		},
+		{
+			MethodName: "ActivateListingByModeration",
+			Handler:    _Listing_ActivateListingByModeration_Handler,
+		},
+		{
+			MethodName: "DeactivateListingByModeration",
+			Handler:    _Listing_DeactivateListingByModeration_Handler,
+		},
+		{
+			MethodName: "GetCategories",
+			Handler:    _Listing_GetCategories_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

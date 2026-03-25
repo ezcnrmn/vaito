@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,9 +20,13 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	User_CreateUser_FullMethodName = "/vaito.v1.User/CreateUser"
-	User_UpdateUser_FullMethodName = "/vaito.v1.User/UpdateUser"
-	User_GetUser_FullMethodName    = "/vaito.v1.User/GetUser"
+	User_CreateUser_FullMethodName                = "/user.v1.User/CreateUser"
+	User_UpdateUser_FullMethodName                = "/user.v1.User/UpdateUser"
+	User_UpdateUserPassword_FullMethodName        = "/user.v1.User/UpdateUserPassword"
+	User_GetUser_FullMethodName                   = "/user.v1.User/GetUser"
+	User_AuthenticateUser_FullMethodName          = "/user.v1.User/AuthenticateUser"
+	User_GetUserIDByToken_FullMethodName          = "/user.v1.User/GetUserIDByToken"
+	User_GetUserPermissionsByToken_FullMethodName = "/user.v1.User/GetUserPermissionsByToken"
 )
 
 // UserClient is the client API for User service.
@@ -30,7 +35,11 @@ const (
 type UserClient interface {
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*UserResponse, error)
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UserResponse, error)
+	UpdateUserPassword(ctx context.Context, in *UpdateUserPasswordRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserResponse, error)
+	AuthenticateUser(ctx context.Context, in *AuthenticateUserRequest, opts ...grpc.CallOption) (*TokenResponse, error)
+	GetUserIDByToken(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*GetUserIDByTokenResponse, error)
+	GetUserPermissionsByToken(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*GetUserPermissionsByTokenResponse, error)
 }
 
 type userClient struct {
@@ -61,10 +70,50 @@ func (c *userClient) UpdateUser(ctx context.Context, in *UpdateUserRequest, opts
 	return out, nil
 }
 
+func (c *userClient) UpdateUserPassword(ctx context.Context, in *UpdateUserPasswordRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, User_UpdateUserPassword_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *userClient) GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UserResponse)
 	err := c.cc.Invoke(ctx, User_GetUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) AuthenticateUser(ctx context.Context, in *AuthenticateUserRequest, opts ...grpc.CallOption) (*TokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TokenResponse)
+	err := c.cc.Invoke(ctx, User_AuthenticateUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) GetUserIDByToken(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*GetUserIDByTokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetUserIDByTokenResponse)
+	err := c.cc.Invoke(ctx, User_GetUserIDByToken_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) GetUserPermissionsByToken(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*GetUserPermissionsByTokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetUserPermissionsByTokenResponse)
+	err := c.cc.Invoke(ctx, User_GetUserPermissionsByToken_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +126,11 @@ func (c *userClient) GetUser(ctx context.Context, in *GetUserRequest, opts ...gr
 type UserServer interface {
 	CreateUser(context.Context, *CreateUserRequest) (*UserResponse, error)
 	UpdateUser(context.Context, *UpdateUserRequest) (*UserResponse, error)
+	UpdateUserPassword(context.Context, *UpdateUserPasswordRequest) (*emptypb.Empty, error)
 	GetUser(context.Context, *GetUserRequest) (*UserResponse, error)
+	AuthenticateUser(context.Context, *AuthenticateUserRequest) (*TokenResponse, error)
+	GetUserIDByToken(context.Context, *TokenRequest) (*GetUserIDByTokenResponse, error)
+	GetUserPermissionsByToken(context.Context, *TokenRequest) (*GetUserPermissionsByTokenResponse, error)
 	mustEmbedUnimplementedUserServer()
 }
 
@@ -94,8 +147,20 @@ func (UnimplementedUserServer) CreateUser(context.Context, *CreateUserRequest) (
 func (UnimplementedUserServer) UpdateUser(context.Context, *UpdateUserRequest) (*UserResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateUser not implemented")
 }
+func (UnimplementedUserServer) UpdateUserPassword(context.Context, *UpdateUserPasswordRequest) (*emptypb.Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateUserPassword not implemented")
+}
 func (UnimplementedUserServer) GetUser(context.Context, *GetUserRequest) (*UserResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetUser not implemented")
+}
+func (UnimplementedUserServer) AuthenticateUser(context.Context, *AuthenticateUserRequest) (*TokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AuthenticateUser not implemented")
+}
+func (UnimplementedUserServer) GetUserIDByToken(context.Context, *TokenRequest) (*GetUserIDByTokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetUserIDByToken not implemented")
+}
+func (UnimplementedUserServer) GetUserPermissionsByToken(context.Context, *TokenRequest) (*GetUserPermissionsByTokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetUserPermissionsByToken not implemented")
 }
 func (UnimplementedUserServer) mustEmbedUnimplementedUserServer() {}
 func (UnimplementedUserServer) testEmbeddedByValue()              {}
@@ -154,6 +219,24 @@ func _User_UpdateUser_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _User_UpdateUserPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateUserPasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).UpdateUserPassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_UpdateUserPassword_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).UpdateUserPassword(ctx, req.(*UpdateUserPasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _User_GetUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetUserRequest)
 	if err := dec(in); err != nil {
@@ -172,11 +255,65 @@ func _User_GetUser_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _User_AuthenticateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthenticateUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).AuthenticateUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_AuthenticateUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).AuthenticateUser(ctx, req.(*AuthenticateUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_GetUserIDByToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).GetUserIDByToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_GetUserIDByToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).GetUserIDByToken(ctx, req.(*TokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_GetUserPermissionsByToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).GetUserPermissionsByToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_GetUserPermissionsByToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).GetUserPermissionsByToken(ctx, req.(*TokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // User_ServiceDesc is the grpc.ServiceDesc for User service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var User_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "vaito.v1.User",
+	ServiceName: "user.v1.User",
 	HandlerType: (*UserServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -188,8 +325,24 @@ var User_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _User_UpdateUser_Handler,
 		},
 		{
+			MethodName: "UpdateUserPassword",
+			Handler:    _User_UpdateUserPassword_Handler,
+		},
+		{
 			MethodName: "GetUser",
 			Handler:    _User_GetUser_Handler,
+		},
+		{
+			MethodName: "AuthenticateUser",
+			Handler:    _User_AuthenticateUser_Handler,
+		},
+		{
+			MethodName: "GetUserIDByToken",
+			Handler:    _User_GetUserIDByToken_Handler,
+		},
+		{
+			MethodName: "GetUserPermissionsByToken",
+			Handler:    _User_GetUserPermissionsByToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

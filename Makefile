@@ -38,6 +38,11 @@ run/user: ## Runs user service
 run/listing: ## Runs listing service
 	-go run -C services/listing ./cmd/api/main.go -debug-log
 
+.PHONY: gen/all
+gen/all: ## Gens go code for all .proto
+	@make gen/user
+	@make gen/listing
+
 USER_PROTO_DIR := ./proto/user/v1
 USER_OUT_DIR := ./gen/go/user
 USER_MODULE_NAME := github.com/ezcnrmn/vaito/gen/go/user
@@ -51,7 +56,7 @@ gen/user: ## Gens go code for user/v1 .proto
 	fi
 
 	@for file in ${wildcard ${USER_PROTO_DIR}/*.proto}; do \
-		echo "Generating for $$file"; \
+		echo "- Generating for $$file"; \
 		protoc --proto_path=$(USER_PROTO_DIR) --go_out=$$USER_OUT_DIR --go_opt=paths=source_relative --go-grpc_out=$$USER_OUT_DIR --go-grpc_opt=paths=source_relative $$file; \
 	done
 
@@ -70,7 +75,7 @@ gen/listing: ## Gens go code for listing/v1 .proto
 	fi
 
 	@for file in ${wildcard ${LISTING_PROTO_DIR}/*.proto}; do \
-		echo "Generating for $$file"; \
+		echo "- Generating for $$file"; \
 		protoc --proto_path=$(LISTING_PROTO_DIR) --go_out=$$LISTING_OUT_DIR --go_opt=paths=source_relative --go-grpc_out=$$LISTING_OUT_DIR --go-grpc_opt=paths=source_relative $$file; \
 	done
 

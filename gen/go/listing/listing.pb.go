@@ -23,20 +23,64 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type CreateListingRequest struct {
+type AuthenticationRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Title         string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
-	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
-	CategoryId    int64                  `protobuf:"varint,3,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
-	UserId        int64                  `protobuf:"varint,4,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Price         int64                  `protobuf:"varint,5,opt,name=price,proto3" json:"price,omitempty"`
+	Token         []byte                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
+func (x *AuthenticationRequest) Reset() {
+	*x = AuthenticationRequest{}
+	mi := &file_listing_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AuthenticationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AuthenticationRequest) ProtoMessage() {}
+
+func (x *AuthenticationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AuthenticationRequest.ProtoReflect.Descriptor instead.
+func (*AuthenticationRequest) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *AuthenticationRequest) GetToken() []byte {
+	if x != nil {
+		return x.Token
+	}
+	return nil
+}
+
+type CreateListingRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Authentication *AuthenticationRequest `protobuf:"bytes,1,opt,name=authentication,proto3" json:"authentication,omitempty"`
+	Title          string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	Description    string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	CategoryId     int64                  `protobuf:"varint,4,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
+	Price          int64                  `protobuf:"varint,5,opt,name=price,proto3" json:"price,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
 func (x *CreateListingRequest) Reset() {
 	*x = CreateListingRequest{}
-	mi := &file_listing_proto_msgTypes[0]
+	mi := &file_listing_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -48,7 +92,7 @@ func (x *CreateListingRequest) String() string {
 func (*CreateListingRequest) ProtoMessage() {}
 
 func (x *CreateListingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_listing_proto_msgTypes[0]
+	mi := &file_listing_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61,7 +105,14 @@ func (x *CreateListingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateListingRequest.ProtoReflect.Descriptor instead.
 func (*CreateListingRequest) Descriptor() ([]byte, []int) {
-	return file_listing_proto_rawDescGZIP(), []int{0}
+	return file_listing_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *CreateListingRequest) GetAuthentication() *AuthenticationRequest {
+	if x != nil {
+		return x.Authentication
+	}
+	return nil
 }
 
 func (x *CreateListingRequest) GetTitle() string {
@@ -85,13 +136,6 @@ func (x *CreateListingRequest) GetCategoryId() int64 {
 	return 0
 }
 
-func (x *CreateListingRequest) GetUserId() int64 {
-	if x != nil {
-		return x.UserId
-	}
-	return 0
-}
-
 func (x *CreateListingRequest) GetPrice() int64 {
 	if x != nil {
 		return x.Price
@@ -99,20 +143,129 @@ func (x *CreateListingRequest) GetPrice() int64 {
 	return 0
 }
 
-type UpdateListingRequest struct {
+type ListingResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Title         *string                `protobuf:"bytes,2,opt,name=title,proto3,oneof" json:"title,omitempty"`
-	Description   *string                `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
-	CategoryId    *int64                 `protobuf:"varint,4,opt,name=category_id,json=categoryId,proto3,oneof" json:"category_id,omitempty"`
-	Price         *int64                 `protobuf:"varint,5,opt,name=price,proto3,oneof" json:"price,omitempty"`
+	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	Category      string                 `protobuf:"bytes,4,opt,name=category,proto3" json:"category,omitempty"`
+	UserId        int64                  `protobuf:"varint,5,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Status        string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
+	Price         int64                  `protobuf:"varint,7,opt,name=price,proto3" json:"price,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	PublishedAt   *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
+func (x *ListingResponse) Reset() {
+	*x = ListingResponse{}
+	mi := &file_listing_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListingResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListingResponse) ProtoMessage() {}
+
+func (x *ListingResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListingResponse.ProtoReflect.Descriptor instead.
+func (*ListingResponse) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *ListingResponse) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *ListingResponse) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *ListingResponse) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *ListingResponse) GetCategory() string {
+	if x != nil {
+		return x.Category
+	}
+	return ""
+}
+
+func (x *ListingResponse) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *ListingResponse) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *ListingResponse) GetPrice() int64 {
+	if x != nil {
+		return x.Price
+	}
+	return 0
+}
+
+func (x *ListingResponse) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *ListingResponse) GetPublishedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.PublishedAt
+	}
+	return nil
+}
+
+type UpdateListingRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Authentication *AuthenticationRequest `protobuf:"bytes,1,opt,name=authentication,proto3" json:"authentication,omitempty"`
+	Id             int64                  `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+	Title          *string                `protobuf:"bytes,3,opt,name=title,proto3,oneof" json:"title,omitempty"`
+	Description    *string                `protobuf:"bytes,4,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	CategoryId     *int64                 `protobuf:"varint,5,opt,name=category_id,json=categoryId,proto3,oneof" json:"category_id,omitempty"`
+	Price          *int64                 `protobuf:"varint,6,opt,name=price,proto3,oneof" json:"price,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
 func (x *UpdateListingRequest) Reset() {
 	*x = UpdateListingRequest{}
-	mi := &file_listing_proto_msgTypes[1]
+	mi := &file_listing_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -124,7 +277,7 @@ func (x *UpdateListingRequest) String() string {
 func (*UpdateListingRequest) ProtoMessage() {}
 
 func (x *UpdateListingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_listing_proto_msgTypes[1]
+	mi := &file_listing_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -137,7 +290,14 @@ func (x *UpdateListingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateListingRequest.ProtoReflect.Descriptor instead.
 func (*UpdateListingRequest) Descriptor() ([]byte, []int) {
-	return file_listing_proto_rawDescGZIP(), []int{1}
+	return file_listing_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *UpdateListingRequest) GetAuthentication() *AuthenticationRequest {
+	if x != nil {
+		return x.Authentication
+	}
+	return nil
 }
 
 func (x *UpdateListingRequest) GetId() int64 {
@@ -175,28 +335,29 @@ func (x *UpdateListingRequest) GetPrice() int64 {
 	return 0
 }
 
-type ListingRequestById struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+type AuthenticatedListingRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Authentication *AuthenticationRequest `protobuf:"bytes,1,opt,name=authentication,proto3" json:"authentication,omitempty"`
+	Id             int64                  `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
-func (x *ListingRequestById) Reset() {
-	*x = ListingRequestById{}
-	mi := &file_listing_proto_msgTypes[2]
+func (x *AuthenticatedListingRequest) Reset() {
+	*x = AuthenticatedListingRequest{}
+	mi := &file_listing_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ListingRequestById) String() string {
+func (x *AuthenticatedListingRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListingRequestById) ProtoMessage() {}
+func (*AuthenticatedListingRequest) ProtoMessage() {}
 
-func (x *ListingRequestById) ProtoReflect() protoreflect.Message {
-	mi := &file_listing_proto_msgTypes[2]
+func (x *AuthenticatedListingRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -207,19 +368,70 @@ func (x *ListingRequestById) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListingRequestById.ProtoReflect.Descriptor instead.
-func (*ListingRequestById) Descriptor() ([]byte, []int) {
-	return file_listing_proto_rawDescGZIP(), []int{2}
+// Deprecated: Use AuthenticatedListingRequest.ProtoReflect.Descriptor instead.
+func (*AuthenticatedListingRequest) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *ListingRequestById) GetId() int64 {
+func (x *AuthenticatedListingRequest) GetAuthentication() *AuthenticationRequest {
+	if x != nil {
+		return x.Authentication
+	}
+	return nil
+}
+
+func (x *AuthenticatedListingRequest) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
 	return 0
 }
 
-type PaginationRequest struct {
+type GetListingRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetListingRequest) Reset() {
+	*x = GetListingRequest{}
+	mi := &file_listing_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetListingRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetListingRequest) ProtoMessage() {}
+
+func (x *GetListingRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetListingRequest.ProtoReflect.Descriptor instead.
+func (*GetListingRequest) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *GetListingRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type GetActiveListingsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
 	Size          int32                  `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
@@ -227,21 +439,21 @@ type PaginationRequest struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *PaginationRequest) Reset() {
-	*x = PaginationRequest{}
-	mi := &file_listing_proto_msgTypes[3]
+func (x *GetActiveListingsRequest) Reset() {
+	*x = GetActiveListingsRequest{}
+	mi := &file_listing_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *PaginationRequest) String() string {
+func (x *GetActiveListingsRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PaginationRequest) ProtoMessage() {}
+func (*GetActiveListingsRequest) ProtoMessage() {}
 
-func (x *PaginationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_listing_proto_msgTypes[3]
+func (x *GetActiveListingsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -252,48 +464,48 @@ func (x *PaginationRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PaginationRequest.ProtoReflect.Descriptor instead.
-func (*PaginationRequest) Descriptor() ([]byte, []int) {
-	return file_listing_proto_rawDescGZIP(), []int{3}
+// Deprecated: Use GetActiveListingsRequest.ProtoReflect.Descriptor instead.
+func (*GetActiveListingsRequest) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *PaginationRequest) GetPage() int32 {
+func (x *GetActiveListingsRequest) GetPage() int32 {
 	if x != nil {
 		return x.Page
 	}
 	return 0
 }
 
-func (x *PaginationRequest) GetSize() int32 {
+func (x *GetActiveListingsRequest) GetSize() int32 {
 	if x != nil {
 		return x.Size
 	}
 	return 0
 }
 
-type GetListingsByUserRequest struct {
+type ListingPaginatedResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Pagination    *PaginationRequest     `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	Items         []*ListingResponse     `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Pagination    *PaginationResponse    `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetListingsByUserRequest) Reset() {
-	*x = GetListingsByUserRequest{}
-	mi := &file_listing_proto_msgTypes[4]
+func (x *ListingPaginatedResponse) Reset() {
+	*x = ListingPaginatedResponse{}
+	mi := &file_listing_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetListingsByUserRequest) String() string {
+func (x *ListingPaginatedResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetListingsByUserRequest) ProtoMessage() {}
+func (*ListingPaginatedResponse) ProtoMessage() {}
 
-func (x *GetListingsByUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_listing_proto_msgTypes[4]
+func (x *ListingPaginatedResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -304,36 +516,97 @@ func (x *GetListingsByUserRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetListingsByUserRequest.ProtoReflect.Descriptor instead.
-func (*GetListingsByUserRequest) Descriptor() ([]byte, []int) {
-	return file_listing_proto_rawDescGZIP(), []int{4}
+// Deprecated: Use ListingPaginatedResponse.ProtoReflect.Descriptor instead.
+func (*ListingPaginatedResponse) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *GetListingsByUserRequest) GetId() int64 {
+func (x *ListingPaginatedResponse) GetItems() []*ListingResponse {
 	if x != nil {
-		return x.Id
+		return x.Items
 	}
-	return 0
+	return nil
 }
 
-func (x *GetListingsByUserRequest) GetPagination() *PaginationRequest {
+func (x *ListingPaginatedResponse) GetPagination() *PaginationResponse {
 	if x != nil {
 		return x.Pagination
 	}
 	return nil
 }
 
+type GetModerationListingsRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Authentication *AuthenticationRequest `protobuf:"bytes,1,opt,name=authentication,proto3" json:"authentication,omitempty"`
+	Page           int32                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
+	Size           int32                  `protobuf:"varint,3,opt,name=size,proto3" json:"size,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *GetModerationListingsRequest) Reset() {
+	*x = GetModerationListingsRequest{}
+	mi := &file_listing_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetModerationListingsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetModerationListingsRequest) ProtoMessage() {}
+
+func (x *GetModerationListingsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetModerationListingsRequest.ProtoReflect.Descriptor instead.
+func (*GetModerationListingsRequest) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *GetModerationListingsRequest) GetAuthentication() *AuthenticationRequest {
+	if x != nil {
+		return x.Authentication
+	}
+	return nil
+}
+
+func (x *GetModerationListingsRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *GetModerationListingsRequest) GetSize() int32 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
 type PaginationResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         *ListingResponse       `protobuf:"bytes,1,opt,name=items,proto3" json:"items,omitempty"`
-	Pagination    *PaginationRequest     `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	Size          int32                  `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
+	Total         int32                  `protobuf:"varint,3,opt,name=total,proto3" json:"total,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *PaginationResponse) Reset() {
 	*x = PaginationResponse{}
-	mi := &file_listing_proto_msgTypes[5]
+	mi := &file_listing_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -345,7 +618,7 @@ func (x *PaginationResponse) String() string {
 func (*PaginationResponse) ProtoMessage() {}
 
 func (x *PaginationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_listing_proto_msgTypes[5]
+	mi := &file_listing_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -358,53 +631,54 @@ func (x *PaginationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PaginationResponse.ProtoReflect.Descriptor instead.
 func (*PaginationResponse) Descriptor() ([]byte, []int) {
-	return file_listing_proto_rawDescGZIP(), []int{5}
+	return file_listing_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *PaginationResponse) GetItems() *ListingResponse {
+func (x *PaginationResponse) GetPage() int32 {
 	if x != nil {
-		return x.Items
+		return x.Page
 	}
-	return nil
+	return 0
 }
 
-func (x *PaginationResponse) GetPagination() *PaginationRequest {
+func (x *PaginationResponse) GetSize() int32 {
 	if x != nil {
-		return x.Pagination
+		return x.Size
 	}
-	return nil
+	return 0
 }
 
-type ListingResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
-	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	Category      string                 `protobuf:"bytes,4,opt,name=category,proto3" json:"category,omitempty"`
-	UserName      string                 `protobuf:"bytes,5,opt,name=user_name,json=userName,proto3" json:"user_name,omitempty"`
-	Status        string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
-	Price         int64                  `protobuf:"varint,7,opt,name=price,proto3" json:"price,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	PublishedAt   *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+func (x *PaginationResponse) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
 }
 
-func (x *ListingResponse) Reset() {
-	*x = ListingResponse{}
-	mi := &file_listing_proto_msgTypes[6]
+type GetListingsByUserRequest struct {
+	state          protoimpl.MessageState                      `protogen:"open.v1"`
+	Authentication *AuthenticationRequest                      `protobuf:"bytes,1,opt,name=authentication,proto3" json:"authentication,omitempty"`
+	Id             int64                                       `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+	Pagination     *GetListingsByUserRequest_PaginationRequest `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *GetListingsByUserRequest) Reset() {
+	*x = GetListingsByUserRequest{}
+	mi := &file_listing_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ListingResponse) String() string {
+func (x *GetListingsByUserRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListingResponse) ProtoMessage() {}
+func (*GetListingsByUserRequest) ProtoMessage() {}
 
-func (x *ListingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_listing_proto_msgTypes[6]
+func (x *GetListingsByUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -415,135 +689,271 @@ func (x *ListingResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListingResponse.ProtoReflect.Descriptor instead.
-func (*ListingResponse) Descriptor() ([]byte, []int) {
-	return file_listing_proto_rawDescGZIP(), []int{6}
+// Deprecated: Use GetListingsByUserRequest.ProtoReflect.Descriptor instead.
+func (*GetListingsByUserRequest) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{10}
 }
 
-func (x *ListingResponse) GetId() int64 {
+func (x *GetListingsByUserRequest) GetAuthentication() *AuthenticationRequest {
+	if x != nil {
+		return x.Authentication
+	}
+	return nil
+}
+
+func (x *GetListingsByUserRequest) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
 	return 0
 }
 
-func (x *ListingResponse) GetTitle() string {
+func (x *GetListingsByUserRequest) GetPagination() *GetListingsByUserRequest_PaginationRequest {
 	if x != nil {
-		return x.Title
+		return x.Pagination
 	}
-	return ""
+	return nil
 }
 
-func (x *ListingResponse) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
+type CategoriesResponse struct {
+	state         protoimpl.MessageState         `protogen:"open.v1"`
+	Categories    []*CategoriesResponse_Category `protobuf:"bytes,1,rep,name=categories,proto3" json:"categories,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ListingResponse) GetCategory() string {
-	if x != nil {
-		return x.Category
-	}
-	return ""
+func (x *CategoriesResponse) Reset() {
+	*x = CategoriesResponse{}
+	mi := &file_listing_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
 }
 
-func (x *ListingResponse) GetUserName() string {
-	if x != nil {
-		return x.UserName
-	}
-	return ""
+func (x *CategoriesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
 }
 
-func (x *ListingResponse) GetStatus() string {
+func (*CategoriesResponse) ProtoMessage() {}
+
+func (x *CategoriesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[11]
 	if x != nil {
-		return x.Status
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
 	}
-	return ""
+	return mi.MessageOf(x)
 }
 
-func (x *ListingResponse) GetPrice() int64 {
+// Deprecated: Use CategoriesResponse.ProtoReflect.Descriptor instead.
+func (*CategoriesResponse) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *CategoriesResponse) GetCategories() []*CategoriesResponse_Category {
 	if x != nil {
-		return x.Price
+		return x.Categories
+	}
+	return nil
+}
+
+type GetListingsByUserRequest_PaginationRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	Size          int32                  `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetListingsByUserRequest_PaginationRequest) Reset() {
+	*x = GetListingsByUserRequest_PaginationRequest{}
+	mi := &file_listing_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetListingsByUserRequest_PaginationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetListingsByUserRequest_PaginationRequest) ProtoMessage() {}
+
+func (x *GetListingsByUserRequest_PaginationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetListingsByUserRequest_PaginationRequest.ProtoReflect.Descriptor instead.
+func (*GetListingsByUserRequest_PaginationRequest) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{10, 0}
+}
+
+func (x *GetListingsByUserRequest_PaginationRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
 	}
 	return 0
 }
 
-func (x *ListingResponse) GetCreatedAt() *timestamppb.Timestamp {
+func (x *GetListingsByUserRequest_PaginationRequest) GetSize() int32 {
 	if x != nil {
-		return x.CreatedAt
+		return x.Size
 	}
-	return nil
+	return 0
 }
 
-func (x *ListingResponse) GetPublishedAt() *timestamppb.Timestamp {
+type CategoriesResponse_Category struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CategoriesResponse_Category) Reset() {
+	*x = CategoriesResponse_Category{}
+	mi := &file_listing_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CategoriesResponse_Category) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CategoriesResponse_Category) ProtoMessage() {}
+
+func (x *CategoriesResponse_Category) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[13]
 	if x != nil {
-		return x.PublishedAt
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
 	}
-	return nil
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CategoriesResponse_Category.ProtoReflect.Descriptor instead.
+func (*CategoriesResponse_Category) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{11, 0}
+}
+
+func (x *CategoriesResponse_Category) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *CategoriesResponse_Category) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
 }
 
 var File_listing_proto protoreflect.FileDescriptor
 
 const file_listing_proto_rawDesc = "" +
 	"\n" +
-	"\rlisting.proto\x12\bvaito.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\"\x9e\x01\n" +
-	"\x14CreateListingRequest\x12\x14\n" +
-	"\x05title\x18\x01 \x01(\tR\x05title\x12 \n" +
-	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x1f\n" +
-	"\vcategory_id\x18\x03 \x01(\x03R\n" +
-	"categoryId\x12\x17\n" +
-	"\auser_id\x18\x04 \x01(\x03R\x06userId\x12\x14\n" +
-	"\x05price\x18\x05 \x01(\x03R\x05price\"\xdd\x01\n" +
-	"\x14UpdateListingRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x19\n" +
-	"\x05title\x18\x02 \x01(\tH\x00R\x05title\x88\x01\x01\x12%\n" +
-	"\vdescription\x18\x03 \x01(\tH\x01R\vdescription\x88\x01\x01\x12$\n" +
-	"\vcategory_id\x18\x04 \x01(\x03H\x02R\n" +
-	"categoryId\x88\x01\x01\x12\x19\n" +
-	"\x05price\x18\x05 \x01(\x03H\x03R\x05price\x88\x01\x01B\b\n" +
-	"\x06_titleB\x0e\n" +
-	"\f_descriptionB\x0e\n" +
-	"\f_category_idB\b\n" +
-	"\x06_price\"$\n" +
-	"\x12ListingRequestById\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\";\n" +
-	"\x11PaginationRequest\x12\x12\n" +
-	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x12\n" +
-	"\x04size\x18\x02 \x01(\x05R\x04size\"g\n" +
-	"\x18GetListingsByUserRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12;\n" +
-	"\n" +
-	"pagination\x18\x02 \x01(\v2\x1b.vaito.v1.PaginationRequestR\n" +
-	"pagination\"\x82\x01\n" +
-	"\x12PaginationResponse\x12/\n" +
-	"\x05items\x18\x01 \x01(\v2\x19.vaito.v1.ListingResponseR\x05items\x12;\n" +
-	"\n" +
-	"pagination\x18\x02 \x01(\v2\x1b.vaito.v1.PaginationRequestR\n" +
-	"pagination\"\xba\x02\n" +
+	"\rlisting.proto\x12\n" +
+	"listing.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\"-\n" +
+	"\x15AuthenticationRequest\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\fR\x05token\"\xd0\x01\n" +
+	"\x14CreateListingRequest\x12I\n" +
+	"\x0eauthentication\x18\x01 \x01(\v2!.listing.v1.AuthenticationRequestR\x0eauthentication\x12\x14\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1f\n" +
+	"\vcategory_id\x18\x04 \x01(\x03R\n" +
+	"categoryId\x12\x14\n" +
+	"\x05price\x18\x05 \x01(\x03R\x05price\"\xb6\x02\n" +
 	"\x0fListingResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1a\n" +
-	"\bcategory\x18\x04 \x01(\tR\bcategory\x12\x1b\n" +
-	"\tuser_name\x18\x05 \x01(\tR\buserName\x12\x16\n" +
+	"\bcategory\x18\x04 \x01(\tR\bcategory\x12\x17\n" +
+	"\auser_id\x18\x05 \x01(\x03R\x06userId\x12\x16\n" +
 	"\x06status\x18\x06 \x01(\tR\x06status\x12\x14\n" +
 	"\x05price\x18\a \x01(\x03R\x05price\x129\n" +
 	"\n" +
 	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12=\n" +
-	"\fpublished_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\vpublishedAt2\xa9\x06\n" +
-	"\aListing\x12L\n" +
-	"\rCreateListing\x12\x1e.vaito.v1.CreateListingRequest\x1a\x19.vaito.v1.ListingResponse\"\x00\x12L\n" +
-	"\rUpdateListing\x12\x1e.vaito.v1.UpdateListingRequest\x1a\x19.vaito.v1.ListingResponse\"\x00\x12G\n" +
-	"\rDeleteListing\x12\x1c.vaito.v1.ListingRequestById\x1a\x16.google.protobuf.Empty\"\x00\x12G\n" +
+	"\fpublished_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\vpublishedAt\"\xa8\x02\n" +
+	"\x14UpdateListingRequest\x12I\n" +
+	"\x0eauthentication\x18\x01 \x01(\v2!.listing.v1.AuthenticationRequestR\x0eauthentication\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\x03R\x02id\x12\x19\n" +
+	"\x05title\x18\x03 \x01(\tH\x00R\x05title\x88\x01\x01\x12%\n" +
+	"\vdescription\x18\x04 \x01(\tH\x01R\vdescription\x88\x01\x01\x12$\n" +
+	"\vcategory_id\x18\x05 \x01(\x03H\x02R\n" +
+	"categoryId\x88\x01\x01\x12\x19\n" +
+	"\x05price\x18\x06 \x01(\x03H\x03R\x05price\x88\x01\x01B\b\n" +
+	"\x06_titleB\x0e\n" +
+	"\f_descriptionB\x0e\n" +
+	"\f_category_idB\b\n" +
+	"\x06_price\"x\n" +
+	"\x1bAuthenticatedListingRequest\x12I\n" +
+	"\x0eauthentication\x18\x01 \x01(\v2!.listing.v1.AuthenticationRequestR\x0eauthentication\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\x03R\x02id\"#\n" +
+	"\x11GetListingRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"B\n" +
+	"\x18GetActiveListingsRequest\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x12\n" +
+	"\x04size\x18\x02 \x01(\x05R\x04size\"\x8d\x01\n" +
+	"\x18ListingPaginatedResponse\x121\n" +
+	"\x05items\x18\x01 \x03(\v2\x1b.listing.v1.ListingResponseR\x05items\x12>\n" +
 	"\n" +
-	"GetListing\x12\x1c.vaito.v1.ListingRequestById\x1a\x19.vaito.v1.ListingResponse\"\x00\x12S\n" +
-	"\x14GetAllActiveListings\x12\x1b.vaito.v1.PaginationRequest\x1a\x1c.vaito.v1.PaginationResponse\"\x00\x12W\n" +
-	"\x18GetAllModerationListings\x12\x1b.vaito.v1.PaginationRequest\x1a\x1c.vaito.v1.PaginationResponse\"\x00\x12W\n" +
-	"\x11GetListingsByUser\x12\".vaito.v1.GetListingsByUserRequest\x1a\x1c.vaito.v1.PaginationResponse\"\x00\x12Q\n" +
-	"\x17SendListingToModeration\x12\x1c.vaito.v1.ListingRequestById\x1a\x16.google.protobuf.Empty\"\x00\x12I\n" +
-	"\x0fActivateListing\x12\x1c.vaito.v1.ListingRequestById\x1a\x16.google.protobuf.Empty\"\x00\x12K\n" +
-	"\x11DeactivateListing\x12\x1c.vaito.v1.ListingRequestById\x1a\x16.google.protobuf.Empty\"\x00B)Z'github.com/ezcnrmn/vaito/gen/go/listingb\x06proto3"
+	"pagination\x18\x02 \x01(\v2\x1e.listing.v1.PaginationResponseR\n" +
+	"pagination\"\x91\x01\n" +
+	"\x1cGetModerationListingsRequest\x12I\n" +
+	"\x0eauthentication\x18\x01 \x01(\v2!.listing.v1.AuthenticationRequestR\x0eauthentication\x12\x12\n" +
+	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x12\n" +
+	"\x04size\x18\x03 \x01(\x05R\x04size\"R\n" +
+	"\x12PaginationResponse\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x12\n" +
+	"\x04size\x18\x02 \x01(\x05R\x04size\x12\x14\n" +
+	"\x05total\x18\x03 \x01(\x05R\x05total\"\x8a\x02\n" +
+	"\x18GetListingsByUserRequest\x12I\n" +
+	"\x0eauthentication\x18\x01 \x01(\v2!.listing.v1.AuthenticationRequestR\x0eauthentication\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\x03R\x02id\x12V\n" +
+	"\n" +
+	"pagination\x18\x03 \x01(\v26.listing.v1.GetListingsByUserRequest.PaginationRequestR\n" +
+	"pagination\x1a;\n" +
+	"\x11PaginationRequest\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x12\n" +
+	"\x04size\x18\x02 \x01(\x05R\x04size\"\x8d\x01\n" +
+	"\x12CategoriesResponse\x12G\n" +
+	"\n" +
+	"categories\x18\x01 \x03(\v2'.listing.v1.CategoriesResponse.CategoryR\n" +
+	"categories\x1a.\n" +
+	"\bCategory\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name2\xf5\t\n" +
+	"\aListing\x12P\n" +
+	"\rCreateListing\x12 .listing.v1.CreateListingRequest\x1a\x1b.listing.v1.ListingResponse\"\x00\x12P\n" +
+	"\rUpdateListing\x12 .listing.v1.UpdateListingRequest\x1a\x1b.listing.v1.ListingResponse\"\x00\x12R\n" +
+	"\rDeleteListing\x12'.listing.v1.AuthenticatedListingRequest\x1a\x16.google.protobuf.Empty\"\x00\x12J\n" +
+	"\n" +
+	"GetListing\x12\x1d.listing.v1.GetListingRequest\x1a\x1b.listing.v1.ListingResponse\"\x00\x12X\n" +
+	"\x0eGetUserListing\x12'.listing.v1.AuthenticatedListingRequest\x1a\x1b.listing.v1.ListingResponse\"\x00\x12a\n" +
+	"\x11GetActiveListings\x12$.listing.v1.GetActiveListingsRequest\x1a$.listing.v1.ListingPaginatedResponse\"\x00\x12i\n" +
+	"\x15GetModerationListings\x12(.listing.v1.GetModerationListingsRequest\x1a$.listing.v1.ListingPaginatedResponse\"\x00\x12a\n" +
+	"\x11GetListingsByUser\x12$.listing.v1.GetListingsByUserRequest\x1a$.listing.v1.ListingPaginatedResponse\"\x00\x12\\\n" +
+	"\x17SendListingToModeration\x12'.listing.v1.AuthenticatedListingRequest\x1a\x16.google.protobuf.Empty\"\x00\x12T\n" +
+	"\x0fActivateListing\x12'.listing.v1.AuthenticatedListingRequest\x1a\x16.google.protobuf.Empty\"\x00\x12V\n" +
+	"\x11DeactivateListing\x12'.listing.v1.AuthenticatedListingRequest\x1a\x16.google.protobuf.Empty\"\x00\x12`\n" +
+	"\x1bActivateListingByModeration\x12'.listing.v1.AuthenticatedListingRequest\x1a\x16.google.protobuf.Empty\"\x00\x12b\n" +
+	"\x1dDeactivateListingByModeration\x12'.listing.v1.AuthenticatedListingRequest\x1a\x16.google.protobuf.Empty\"\x00\x12I\n" +
+	"\rGetCategories\x12\x16.google.protobuf.Empty\x1a\x1e.listing.v1.CategoriesResponse\"\x00B)Z'github.com/ezcnrmn/vaito/gen/go/listingb\x06proto3"
 
 var (
 	file_listing_proto_rawDescOnce sync.Once
@@ -557,49 +967,70 @@ func file_listing_proto_rawDescGZIP() []byte {
 	return file_listing_proto_rawDescData
 }
 
-var file_listing_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_listing_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_listing_proto_goTypes = []any{
-	(*CreateListingRequest)(nil),     // 0: vaito.v1.CreateListingRequest
-	(*UpdateListingRequest)(nil),     // 1: vaito.v1.UpdateListingRequest
-	(*ListingRequestById)(nil),       // 2: vaito.v1.ListingRequestById
-	(*PaginationRequest)(nil),        // 3: vaito.v1.PaginationRequest
-	(*GetListingsByUserRequest)(nil), // 4: vaito.v1.GetListingsByUserRequest
-	(*PaginationResponse)(nil),       // 5: vaito.v1.PaginationResponse
-	(*ListingResponse)(nil),          // 6: vaito.v1.ListingResponse
-	(*timestamppb.Timestamp)(nil),    // 7: google.protobuf.Timestamp
-	(*emptypb.Empty)(nil),            // 8: google.protobuf.Empty
+	(*AuthenticationRequest)(nil),                      // 0: listing.v1.AuthenticationRequest
+	(*CreateListingRequest)(nil),                       // 1: listing.v1.CreateListingRequest
+	(*ListingResponse)(nil),                            // 2: listing.v1.ListingResponse
+	(*UpdateListingRequest)(nil),                       // 3: listing.v1.UpdateListingRequest
+	(*AuthenticatedListingRequest)(nil),                // 4: listing.v1.AuthenticatedListingRequest
+	(*GetListingRequest)(nil),                          // 5: listing.v1.GetListingRequest
+	(*GetActiveListingsRequest)(nil),                   // 6: listing.v1.GetActiveListingsRequest
+	(*ListingPaginatedResponse)(nil),                   // 7: listing.v1.ListingPaginatedResponse
+	(*GetModerationListingsRequest)(nil),               // 8: listing.v1.GetModerationListingsRequest
+	(*PaginationResponse)(nil),                         // 9: listing.v1.PaginationResponse
+	(*GetListingsByUserRequest)(nil),                   // 10: listing.v1.GetListingsByUserRequest
+	(*CategoriesResponse)(nil),                         // 11: listing.v1.CategoriesResponse
+	(*GetListingsByUserRequest_PaginationRequest)(nil), // 12: listing.v1.GetListingsByUserRequest.PaginationRequest
+	(*CategoriesResponse_Category)(nil),                // 13: listing.v1.CategoriesResponse.Category
+	(*timestamppb.Timestamp)(nil),                      // 14: google.protobuf.Timestamp
+	(*emptypb.Empty)(nil),                              // 15: google.protobuf.Empty
 }
 var file_listing_proto_depIdxs = []int32{
-	3,  // 0: vaito.v1.GetListingsByUserRequest.pagination:type_name -> vaito.v1.PaginationRequest
-	6,  // 1: vaito.v1.PaginationResponse.items:type_name -> vaito.v1.ListingResponse
-	3,  // 2: vaito.v1.PaginationResponse.pagination:type_name -> vaito.v1.PaginationRequest
-	7,  // 3: vaito.v1.ListingResponse.created_at:type_name -> google.protobuf.Timestamp
-	7,  // 4: vaito.v1.ListingResponse.published_at:type_name -> google.protobuf.Timestamp
-	0,  // 5: vaito.v1.Listing.CreateListing:input_type -> vaito.v1.CreateListingRequest
-	1,  // 6: vaito.v1.Listing.UpdateListing:input_type -> vaito.v1.UpdateListingRequest
-	2,  // 7: vaito.v1.Listing.DeleteListing:input_type -> vaito.v1.ListingRequestById
-	2,  // 8: vaito.v1.Listing.GetListing:input_type -> vaito.v1.ListingRequestById
-	3,  // 9: vaito.v1.Listing.GetAllActiveListings:input_type -> vaito.v1.PaginationRequest
-	3,  // 10: vaito.v1.Listing.GetAllModerationListings:input_type -> vaito.v1.PaginationRequest
-	4,  // 11: vaito.v1.Listing.GetListingsByUser:input_type -> vaito.v1.GetListingsByUserRequest
-	2,  // 12: vaito.v1.Listing.SendListingToModeration:input_type -> vaito.v1.ListingRequestById
-	2,  // 13: vaito.v1.Listing.ActivateListing:input_type -> vaito.v1.ListingRequestById
-	2,  // 14: vaito.v1.Listing.DeactivateListing:input_type -> vaito.v1.ListingRequestById
-	6,  // 15: vaito.v1.Listing.CreateListing:output_type -> vaito.v1.ListingResponse
-	6,  // 16: vaito.v1.Listing.UpdateListing:output_type -> vaito.v1.ListingResponse
-	8,  // 17: vaito.v1.Listing.DeleteListing:output_type -> google.protobuf.Empty
-	6,  // 18: vaito.v1.Listing.GetListing:output_type -> vaito.v1.ListingResponse
-	5,  // 19: vaito.v1.Listing.GetAllActiveListings:output_type -> vaito.v1.PaginationResponse
-	5,  // 20: vaito.v1.Listing.GetAllModerationListings:output_type -> vaito.v1.PaginationResponse
-	5,  // 21: vaito.v1.Listing.GetListingsByUser:output_type -> vaito.v1.PaginationResponse
-	8,  // 22: vaito.v1.Listing.SendListingToModeration:output_type -> google.protobuf.Empty
-	8,  // 23: vaito.v1.Listing.ActivateListing:output_type -> google.protobuf.Empty
-	8,  // 24: vaito.v1.Listing.DeactivateListing:output_type -> google.protobuf.Empty
-	15, // [15:25] is the sub-list for method output_type
-	5,  // [5:15] is the sub-list for method input_type
-	5,  // [5:5] is the sub-list for extension type_name
-	5,  // [5:5] is the sub-list for extension extendee
-	0,  // [0:5] is the sub-list for field type_name
+	0,  // 0: listing.v1.CreateListingRequest.authentication:type_name -> listing.v1.AuthenticationRequest
+	14, // 1: listing.v1.ListingResponse.created_at:type_name -> google.protobuf.Timestamp
+	14, // 2: listing.v1.ListingResponse.published_at:type_name -> google.protobuf.Timestamp
+	0,  // 3: listing.v1.UpdateListingRequest.authentication:type_name -> listing.v1.AuthenticationRequest
+	0,  // 4: listing.v1.AuthenticatedListingRequest.authentication:type_name -> listing.v1.AuthenticationRequest
+	2,  // 5: listing.v1.ListingPaginatedResponse.items:type_name -> listing.v1.ListingResponse
+	9,  // 6: listing.v1.ListingPaginatedResponse.pagination:type_name -> listing.v1.PaginationResponse
+	0,  // 7: listing.v1.GetModerationListingsRequest.authentication:type_name -> listing.v1.AuthenticationRequest
+	0,  // 8: listing.v1.GetListingsByUserRequest.authentication:type_name -> listing.v1.AuthenticationRequest
+	12, // 9: listing.v1.GetListingsByUserRequest.pagination:type_name -> listing.v1.GetListingsByUserRequest.PaginationRequest
+	13, // 10: listing.v1.CategoriesResponse.categories:type_name -> listing.v1.CategoriesResponse.Category
+	1,  // 11: listing.v1.Listing.CreateListing:input_type -> listing.v1.CreateListingRequest
+	3,  // 12: listing.v1.Listing.UpdateListing:input_type -> listing.v1.UpdateListingRequest
+	4,  // 13: listing.v1.Listing.DeleteListing:input_type -> listing.v1.AuthenticatedListingRequest
+	5,  // 14: listing.v1.Listing.GetListing:input_type -> listing.v1.GetListingRequest
+	4,  // 15: listing.v1.Listing.GetUserListing:input_type -> listing.v1.AuthenticatedListingRequest
+	6,  // 16: listing.v1.Listing.GetActiveListings:input_type -> listing.v1.GetActiveListingsRequest
+	8,  // 17: listing.v1.Listing.GetModerationListings:input_type -> listing.v1.GetModerationListingsRequest
+	10, // 18: listing.v1.Listing.GetListingsByUser:input_type -> listing.v1.GetListingsByUserRequest
+	4,  // 19: listing.v1.Listing.SendListingToModeration:input_type -> listing.v1.AuthenticatedListingRequest
+	4,  // 20: listing.v1.Listing.ActivateListing:input_type -> listing.v1.AuthenticatedListingRequest
+	4,  // 21: listing.v1.Listing.DeactivateListing:input_type -> listing.v1.AuthenticatedListingRequest
+	4,  // 22: listing.v1.Listing.ActivateListingByModeration:input_type -> listing.v1.AuthenticatedListingRequest
+	4,  // 23: listing.v1.Listing.DeactivateListingByModeration:input_type -> listing.v1.AuthenticatedListingRequest
+	15, // 24: listing.v1.Listing.GetCategories:input_type -> google.protobuf.Empty
+	2,  // 25: listing.v1.Listing.CreateListing:output_type -> listing.v1.ListingResponse
+	2,  // 26: listing.v1.Listing.UpdateListing:output_type -> listing.v1.ListingResponse
+	15, // 27: listing.v1.Listing.DeleteListing:output_type -> google.protobuf.Empty
+	2,  // 28: listing.v1.Listing.GetListing:output_type -> listing.v1.ListingResponse
+	2,  // 29: listing.v1.Listing.GetUserListing:output_type -> listing.v1.ListingResponse
+	7,  // 30: listing.v1.Listing.GetActiveListings:output_type -> listing.v1.ListingPaginatedResponse
+	7,  // 31: listing.v1.Listing.GetModerationListings:output_type -> listing.v1.ListingPaginatedResponse
+	7,  // 32: listing.v1.Listing.GetListingsByUser:output_type -> listing.v1.ListingPaginatedResponse
+	15, // 33: listing.v1.Listing.SendListingToModeration:output_type -> google.protobuf.Empty
+	15, // 34: listing.v1.Listing.ActivateListing:output_type -> google.protobuf.Empty
+	15, // 35: listing.v1.Listing.DeactivateListing:output_type -> google.protobuf.Empty
+	15, // 36: listing.v1.Listing.ActivateListingByModeration:output_type -> google.protobuf.Empty
+	15, // 37: listing.v1.Listing.DeactivateListingByModeration:output_type -> google.protobuf.Empty
+	11, // 38: listing.v1.Listing.GetCategories:output_type -> listing.v1.CategoriesResponse
+	25, // [25:39] is the sub-list for method output_type
+	11, // [11:25] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_listing_proto_init() }
@@ -607,14 +1038,14 @@ func file_listing_proto_init() {
 	if File_listing_proto != nil {
 		return
 	}
-	file_listing_proto_msgTypes[1].OneofWrappers = []any{}
+	file_listing_proto_msgTypes[3].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_listing_proto_rawDesc), len(file_listing_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
