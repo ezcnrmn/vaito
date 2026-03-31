@@ -4,17 +4,26 @@ package user.v1;
 
 option go_package = "github.com/ezcnrmn/vaito/gen/go/user";
 
-import "google/protobuf/empty.proto";
+service UserService {
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse) {}
+  rpc UpdateUserPassword(UpdateUserPasswordRequest) returns (UpdateUserPasswordResponse) {}
+  rpc GetUser(GetUserRequest) returns (GetUserResponse) {}
 
-service User {
-  rpc CreateUser (CreateUserRequest) returns (UserResponse) {}
-  rpc UpdateUser (UpdateUserRequest) returns (UserResponse) {}
-  rpc UpdateUserPassword (UpdateUserPasswordRequest) returns (google.protobuf.Empty) {}
-  rpc GetUser (GetUserRequest) returns (UserResponse) {}
+  rpc AuthenticateUser(AuthenticateUserRequest) returns (AuthenticateUserResponse) {}
+  rpc GetUserIDByToken(GetUserIDByTokenRequest) returns (GetUserIDByTokenResponse) {}
+  rpc GetUserPermissionsByToken(GetUserPermissionsByTokenRequest) returns (GetUserPermissionsByTokenResponse) {}
+}
 
-  rpc AuthenticateUser (AuthenticateUserRequest) returns (TokenResponse) {}
-  rpc GetUserIDByToken (TokenRequest) returns (GetUserIDByTokenResponse) {}
-  rpc GetUserPermissionsByToken (TokenRequest) returns (GetUserPermissionsByTokenResponse) {}
+message User {
+  int64 id = 1;
+  string name = 2;
+  string email = 3;
+  string role_name = 4;
+}
+
+message Token {
+  string token = 1;
 }
 
 message CreateUserRequest {
@@ -22,48 +31,54 @@ message CreateUserRequest {
   string email = 2;
   string password = 3;
 }
-
-message UserResponse {
-  int64 id = 1;
-  string name = 2;
-  string email = 3;
-  string role_name = 4;
-}
-
-message TokenRequest {
-  bytes token = 1;
+message CreateUserResponse {
+  User user = 1;
 }
 
 message UpdateUserRequest {
-  optional string name = 1;
-  optional string email = 2;
+  int64 id = 1;
+  optional string name = 2;
+  optional string email = 3;
 
-  TokenRequest token = 3;
+  Token token = 4;
+}
+message UpdateUserResponse {
+  User user = 1;
 }
 
 message UpdateUserPasswordRequest {
-  bytes password = 1;
+  int64 id = 1;
+  string password = 2;
 
-  TokenRequest token = 2;
+  Token token = 3;
 }
+message UpdateUserPasswordResponse {}
 
 message GetUserRequest {
   int64 id = 1;
+}
+message GetUserResponse {
+  User user = 1;
 }
 
 message AuthenticateUserRequest {
   string email = 1;
   string password = 2;
 }
-
-message TokenResponse {
-  bytes token = 1;
+message AuthenticateUserResponse {
+  Token token = 1;
 }
 
+message GetUserIDByTokenRequest {
+  Token token = 1;
+}
 message GetUserIDByTokenResponse {
   int64 user_id = 1;
 }
 
+message GetUserPermissionsByTokenRequest {
+  Token token = 1;
+}
 message GetUserPermissionsByTokenResponse {
   GetUserIDByTokenResponse user = 1;
 

@@ -6,9 +6,9 @@ import (
 	"time"
 
 	pbUser "github.com/ezcnrmn/vaito/gen/go/user"
+	"github.com/ezcnrmn/vaito/services/gateway/internal/lib/contextutil"
 	"github.com/ezcnrmn/vaito/services/gateway/internal/lib/jsonutil"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +30,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	resp, err := h.userConn.CreateUser(ctx, &pbUser.CreateUserRequest{
@@ -39,9 +39,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		Password: payload.Password,
 	})
 	if err != nil {
-		if s, ok := status.FromError(err); ok {
-			msg := s.Message()
-			code := s.Code()
+		h.handleGRPCError(w, err, func(code codes.Code, msg string) {
 			switch code {
 			case codes.AlreadyExists:
 				sendError(w, http.StatusConflict, msg)
@@ -49,34 +47,32 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 				h.log.Error(msg, "code", code)
 				sendInternalError(w)
 			}
-		} else {
-			h.log.Error(err.Error())
-			sendInternalError(w)
-		}
+		})
 		return
 	}
 
-	user := struct {
-		ID       int64
-		Name     string
-		Email    string
-		RoleName string
-	}{
-		ID:       resp.Id,
-		Name:     resp.Name,
-		Email:    resp.Email,
-		RoleName: resp.RoleName,
-	}
-	jsonutil.WriteJSON(w, http.StatusOK, jsonutil.Envelope{"user": user})
+	writeUserResponse(w, resp.GetUser())
 }
 
 func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
-	var payload struct {
-		Name  *string `json:"name" validate:"min=3,max=50,lettersAndDigits"`
-		Email *string `json:"email" validate:"email"`
+	token := contextutil.GetToken(r)
+	if token == "" {
+		sendMissingTokenError(w)
+		return
 	}
 
-	err := jsonutil.ReadJSON(w, r, &payload)
+	id, err := readIDParam(r)
+	if err != nil {
+		sendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	var payload struct {
+		Name  *string `json:"name" validate:"omitempty,min=3,max=50,lettersAndDigits"`
+		Email *string `json:"email" validate:"omitempty,email"`
+	}
+
+	err = jsonutil.ReadJSON(w, r, &payload)
 	if err != nil {
 		sendError(w, http.StatusBadRequest, err.Error())
 		return
@@ -88,51 +84,99 @@ func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var token []byte
-
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	resp, err := h.userConn.UpdateUser(ctx, &pbUser.UpdateUserRequest{
+		Id:    id,
 		Name:  payload.Name,
 		Email: payload.Email,
-		Token: &pbUser.TokenRequest{
+		Token: &pbUser.Token{
 			Token: token,
 		},
 	})
 	if err != nil {
-		if s, ok := status.FromError(err); ok {
-			msg := s.Message()
-			code := s.Code()
+		h.handleGRPCError(w, err, func(code codes.Code, msg string) {
 			switch code {
 			case codes.Unauthenticated:
 				sendError(w, http.StatusUnauthorized, msg)
+			case codes.NotFound:
+				sendUnauthorizedError(w)
+			case codes.PermissionDenied:
+				sendForbiddenError(w)
+			case codes.Aborted:
+				sendError(w, http.StatusUnprocessableEntity, msg)
 			default:
 				h.log.Error(msg, "code", code)
 				sendInternalError(w)
 			}
-		} else {
-			h.log.Error(err.Error())
-			sendInternalError(w)
-		}
+		})
 		return
 	}
 
-	user := struct {
-		ID       int64
-		Name     string
-		Email    string
-		RoleName string
-	}{
-		ID:       resp.Id,
-		Name:     resp.Name,
-		Email:    resp.Email,
-		RoleName: resp.RoleName,
-	}
-	jsonutil.WriteJSON(w, http.StatusOK, jsonutil.Envelope{"user": user})
+	writeUserResponse(w, resp.GetUser())
 }
 
-func (h *Handler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {}
+func (h *Handler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
+	token := contextutil.GetToken(r)
+	if token == "" {
+		sendMissingTokenError(w)
+		return
+	}
+
+	id, err := readIDParam(r)
+	if err != nil {
+		sendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	var payload struct {
+		Password string `json:"password" validate:"required,min=8,max=100"`
+	}
+
+	err = jsonutil.ReadJSON(w, r, &payload)
+	if err != nil {
+		sendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	err = h.validator.Struct(payload)
+	if err != nil {
+		sendValidateError(w, err)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err = h.userConn.UpdateUserPassword(ctx, &pbUser.UpdateUserPasswordRequest{
+		Id:       id,
+		Password: payload.Password,
+		Token: &pbUser.Token{
+			Token: token,
+		},
+	})
+	if err != nil {
+		h.handleGRPCError(w, err, func(code codes.Code, msg string) {
+			switch code {
+			case codes.Unauthenticated:
+				sendError(w, http.StatusUnauthorized, msg)
+			case codes.NotFound:
+				sendUnauthorizedError(w)
+			case codes.PermissionDenied:
+				sendForbiddenError(w)
+			case codes.Aborted:
+				sendError(w, http.StatusUnprocessableEntity, msg)
+			default:
+				h.log.Error(msg, "code", code)
+				sendInternalError(w)
+			}
+		})
+		return
+	}
+
+	sendSuccessMessage(w, "password successfully changed")
+}
 
 func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 	id, err := readIDParam(r)
@@ -141,14 +185,12 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	resp, err := h.userConn.GetUser(ctx, &pbUser.GetUserRequest{Id: id})
 	if err != nil {
-		if s, ok := status.FromError(err); ok {
-			msg := s.Message()
-			code := s.Code()
+		h.handleGRPCError(w, err, func(code codes.Code, msg string) {
 			switch code {
 			case codes.NotFound:
 				sendError(w, http.StatusNotFound, msg)
@@ -156,31 +198,17 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 				h.log.Error(msg, "code", code)
 				sendInternalError(w)
 			}
-		} else {
-			h.log.Error(err.Error())
-			sendInternalError(w)
-		}
+		})
 		return
 	}
 
-	user := struct {
-		ID       int64
-		Name     string
-		Email    string
-		RoleName string
-	}{
-		ID:       resp.Id,
-		Name:     resp.Name,
-		Email:    resp.Email,
-		RoleName: resp.RoleName,
-	}
-	jsonutil.WriteJSON(w, http.StatusOK, jsonutil.Envelope{"user": user})
+	writeUserResponse(w, resp.GetUser())
 }
 
 func (h *Handler) AuthenticateUser(w http.ResponseWriter, r *http.Request) {
 	var payload struct {
 		Email    string `json:"email" validate:"required,email"`
-		Password string `json:"password" validate:"required,min=8,max=100"`
+		Password string `json:"password" validate:"required"`
 	}
 
 	err := jsonutil.ReadJSON(w, r, &payload)
@@ -195,7 +223,7 @@ func (h *Handler) AuthenticateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	resp, err := h.userConn.AuthenticateUser(ctx, &pbUser.AuthenticateUserRequest{
@@ -203,9 +231,7 @@ func (h *Handler) AuthenticateUser(w http.ResponseWriter, r *http.Request) {
 		Password: payload.Password,
 	})
 	if err != nil {
-		if s, ok := status.FromError(err); ok {
-			msg := s.Message()
-			code := s.Code()
+		h.handleGRPCError(w, err, func(code codes.Code, msg string) {
 			switch code {
 			case codes.Unauthenticated:
 				sendError(w, http.StatusUnauthorized, msg)
@@ -213,15 +239,9 @@ func (h *Handler) AuthenticateUser(w http.ResponseWriter, r *http.Request) {
 				h.log.Error(msg, "code", code)
 				sendInternalError(w)
 			}
-		} else {
-			h.log.Error(err.Error())
-			sendInternalError(w)
-		}
+		})
 		return
 	}
 
-	jsonutil.WriteJSON(w, http.StatusOK, jsonutil.Envelope{"token": string(resp.Token)})
-}
-
-func (h *Handler) GetUserListings(w http.ResponseWriter, r *http.Request) {
+	jsonutil.WriteJSON(w, http.StatusOK, jsonutil.Envelope{"token": resp.GetToken().GetToken()})
 }

@@ -20,7 +20,7 @@ type App struct {
 
 func New(logger *slog.Logger, db *sql.DB) *App {
 	s := grpc.NewServer()
-	pb.RegisterListingServer(s, server.NewServer(db, logger))
+	pb.RegisterListingServiceServer(s, server.NewServer(db, logger))
 
 	app := &App{
 		log:        logger,

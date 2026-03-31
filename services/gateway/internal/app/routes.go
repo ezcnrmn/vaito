@@ -16,13 +16,16 @@ func (a *App) routes() http.Handler {
 	handler := handler.New(a.log, a.services.user, a.services.listing)
 	routes := httprouter.New()
 
+	routes.NotFound = http.HandlerFunc(handler.NotFound)
+	routes.MethodNotAllowed = http.HandlerFunc(handler.MethodNotAllowed)
+
 	routes.HandlerFunc(http.MethodGet, apiV1+"/healthcheck", handler.Healthcheck)
 
 	routes.HandlerFunc(http.MethodPost, apiV1+"/users", handler.CreateUser)
 	routes.HandlerFunc(http.MethodPatch, apiV1+"/users/:id", handler.UpdateUser)
 	routes.HandlerFunc(http.MethodPut, apiV1+"/users/:id/update-password", handler.UpdateUserPassword)
 	routes.HandlerFunc(http.MethodGet, apiV1+"/users/:id", handler.GetUser)
-	routes.HandlerFunc(http.MethodPost, apiV1+"/users/login", handler.AuthenticateUser)
+	routes.HandlerFunc(http.MethodPost, apiV1+"/login", handler.AuthenticateUser)
 
 	routes.HandlerFunc(http.MethodGet, apiV1+"/users/:id/listings", handler.GetUserListings)
 
@@ -35,7 +38,7 @@ func (a *App) routes() http.Handler {
 	routes.HandlerFunc(http.MethodPost, apiV1+"/listings/:id/deactivate", handler.DeactivateListing)
 
 	routes.HandlerFunc(http.MethodGet, apiV1+"/listings", handler.GetListings)
-	routes.HandlerFunc(http.MethodGet, apiV1+"/listings/categories", handler.GetListingCategories)
+	routes.HandlerFunc(http.MethodGet, apiV1+"/categories", handler.GetListingCategories)
 
 	routes.HandlerFunc(http.MethodPost, apiV1+"/moderation/listings", handler.ModerationListings)
 	routes.HandlerFunc(http.MethodPost, apiV1+"/moderation/listings/:id/activate", handler.ModerationActivateListing)
@@ -63,22 +66,23 @@ func validateToken(next http.Handler) http.Handler {
 
 		authorizationHeader := r.Header.Get("Authorization")
 		if authorizationHeader == "" {
-			r = contextutil.SetToken(r, []byte(""))
+			r = contextutil.SetToken(r, "")
 			next.ServeHTTP(w, r)
 			return
 		}
 
 		headerParts := strings.Split(authorizationHeader, " ")
-		if (len(headerParts) != 2) || (len(headerParts) == 2 && (headerParts[0] != "Bearer" || len(headerParts[1]) != 26)) {
+		// 32byte token -> 44 length
+		if (len(headerParts) != 2) || (len(headerParts) == 2 && (headerParts[0] != "Bearer" || len(headerParts[1]) != 44)) {
 			w.Header().Set("WWW-Authenticate", "Bearer")
-			msg := jsonutil.Envelope{"error": "invalid or missing authentication token"}
+			msg := jsonutil.Envelope{"error": "invalid authentication token"}
 			jsonutil.WriteJSON(w, http.StatusUnauthorized, msg)
 			return
 		}
 
 		token := headerParts[1]
 
-		r = contextutil.SetToken(r, []byte(token))
+		r = contextutil.SetToken(r, token)
 		next.ServeHTTP(w, r)
 	})
 }

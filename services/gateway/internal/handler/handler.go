@@ -13,11 +13,11 @@ import (
 type Handler struct {
 	log         *slog.Logger
 	validator   *validator.Validate
-	userConn    pbUser.UserClient
-	listingConn pbListing.ListingClient
+	userConn    pbUser.UserServiceClient
+	listingConn pbListing.ListingServiceClient
 }
 
-func New(logger *slog.Logger, userConn pbUser.UserClient, listingConn pbListing.ListingClient) *Handler {
+func New(logger *slog.Logger, userConn pbUser.UserServiceClient, listingConn pbListing.ListingServiceClient) *Handler {
 	validator := validator.New()
 	validator.RegisterValidation("lettersAndDigits", lettersAndDigits)
 	validator.RegisterTagNameFunc(func(fld reflect.StructField) string {

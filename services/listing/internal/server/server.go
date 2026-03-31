@@ -10,7 +10,7 @@ import (
 )
 
 type Server struct {
-	pb.UnimplementedListingServer
+	pb.UnimplementedListingServiceServer
 
 	model model.ListingModel
 	log   *slog.Logger
@@ -20,6 +20,6 @@ func NewServer(db *sql.DB, logger *slog.Logger) *Server {
 	return &Server{model: model.ListingModel{DB: db}, log: logger}
 }
 
-func (s *Server) CreateListing(_ context.Context, req *pb.CreateListingRequest) (*pb.ListingResponse, error) {
-	return &pb.ListingResponse{}, nil
+func (s *Server) CreateListing(_ context.Context, req *pb.CreateListingRequest) (*pb.CreateListingResponse, error) {
+	return &pb.CreateListingResponse{}, nil
 }

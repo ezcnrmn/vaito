@@ -5,15 +5,17 @@ import (
 	"net/http"
 )
 
-const tokenKey = "token"
+type CustomContextKey string
 
-func SetToken(r *http.Request, token []byte) *http.Request {
+const tokenKey CustomContextKey = "token"
+
+func SetToken(r *http.Request, token string) *http.Request {
 	ctx := context.WithValue(r.Context(), tokenKey, token)
 	return r.WithContext(ctx)
 }
 
-func GetToken(r *http.Request) []byte {
-	token, ok := r.Context().Value(tokenKey).([]byte)
+func GetToken(r *http.Request) string {
+	token, ok := r.Context().Value(tokenKey).(string)
 	if !ok {
 		panic("missing token in request context")
 	}

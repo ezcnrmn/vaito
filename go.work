@@ -1,0 +1,9 @@
+go 1.26.1
+
+use (
+	./gen/go/listing
+	./gen/go/user
+	./services/gateway
+	./services/listing
+	./services/user
+)

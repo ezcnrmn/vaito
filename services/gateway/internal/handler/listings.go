@@ -27,3 +27,6 @@ func (h *Handler) DeactivateListing(w http.ResponseWriter, r *http.Request) {}
 func (h *Handler) GetListings(w http.ResponseWriter, r *http.Request) {}
 
 func (h *Handler) GetListingCategories(w http.ResponseWriter, r *http.Request) {}
+
+func (h *Handler) GetUserListings(w http.ResponseWriter, r *http.Request) {
+}

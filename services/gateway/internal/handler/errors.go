@@ -9,6 +9,16 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+func (h *Handler) NotFound(w http.ResponseWriter, _ *http.Request) {
+	msg := "the requested resource could not be found"
+	sendError(w, http.StatusNotFound, msg)
+}
+
+func (h *Handler) MethodNotAllowed(w http.ResponseWriter, r *http.Request) {
+	msg := fmt.Sprintf("the %s method is not supported for this resource", r.Method)
+	sendError(w, http.StatusMethodNotAllowed, msg)
+}
+
 func sendError(w http.ResponseWriter, code int, message string) {
 	data := jsonutil.Envelope{
 		"error": message,
@@ -17,10 +27,23 @@ func sendError(w http.ResponseWriter, code int, message string) {
 }
 
 func sendInternalError(w http.ResponseWriter) {
-	data := jsonutil.Envelope{
-		"error": "an unexpected error occurred while processing your request",
-	}
-	jsonutil.WriteJSON(w, http.StatusInternalServerError, data)
+	msg := "an unexpected error occurred while processing your request"
+	sendError(w, http.StatusInternalServerError, msg)
+}
+
+func sendMissingTokenError(w http.ResponseWriter) {
+	msg := "missing authentication token"
+	sendError(w, http.StatusUnauthorized, msg)
+}
+
+func sendUnauthorizedError(w http.ResponseWriter) {
+	msg := "you must be authenticated to access this resource"
+	sendError(w, http.StatusUnauthorized, msg)
+}
+
+func sendForbiddenError(w http.ResponseWriter) {
+	msg := "you don't have the necessary permissions to access this resource"
+	sendError(w, http.StatusForbidden, msg)
 }
 
 func sendValidateError(w http.ResponseWriter, err error) {

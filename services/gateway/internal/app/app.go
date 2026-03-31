@@ -21,14 +21,14 @@ type App struct {
 	log        *slog.Logger
 	httpServer *http.Server
 	services   struct {
-		user    pbUser.UserClient
-		listing pbListing.ListingClient
+		user    pbUser.UserServiceClient
+		listing pbListing.ListingServiceClient
 	}
 }
 
 func New(port string, logger *slog.Logger, userClient, listingClient *grpc.ClientConn) *App {
-	userConn := pbUser.NewUserClient(userClient)
-	listingConn := pbListing.NewListingClient(listingClient)
+	userConn := pbUser.NewUserServiceClient(userClient)
+	listingConn := pbListing.NewListingServiceClient(listingClient)
 
 	app := &App{
 		port: port,

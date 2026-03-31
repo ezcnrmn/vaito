@@ -6,6 +6,7 @@ require github.com/lib/pq v1.11.2
 
 require (
 	github.com/ezcnrmn/vaito/gen/go/user v0.0.0
+	golang.org/x/crypto v0.46.0
 	google.golang.org/grpc v1.79.3
 )
 
