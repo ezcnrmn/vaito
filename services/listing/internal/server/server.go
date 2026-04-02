@@ -1,25 +1,36 @@
 package server
 
 import (
-	"context"
 	"database/sql"
 	"log/slog"
 
 	pb "github.com/ezcnrmn/vaito/gen/go/listing"
+	pbUser "github.com/ezcnrmn/vaito/gen/go/user"
 	"github.com/ezcnrmn/vaito/services/listing/internal/model"
 )
 
 type Server struct {
 	pb.UnimplementedListingServiceServer
 
-	model model.ListingModel
-	log   *slog.Logger
+	model struct {
+		listing model.ListingModel
+	}
+	service struct {
+		user pbUser.UserServiceClient
+	}
+	log *slog.Logger
 }
 
-func NewServer(db *sql.DB, logger *slog.Logger) *Server {
-	return &Server{model: model.ListingModel{DB: db}, log: logger}
-}
+func NewServer(db *sql.DB, logger *slog.Logger, user pbUser.UserServiceClient) *Server {
+	return &Server{
+		model: struct{ listing model.ListingModel }{
+			listing: model.ListingModel{DB: db},
+		},
 
-func (s *Server) CreateListing(_ context.Context, req *pb.CreateListingRequest) (*pb.CreateListingResponse, error) {
-	return &pb.CreateListingResponse{}, nil
+		service: struct{ user pbUser.UserServiceClient }{
+			user: user,
+		},
+
+		log: logger,
+	}
 }

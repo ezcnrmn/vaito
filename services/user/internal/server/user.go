@@ -34,12 +34,7 @@ func (s *Server) CreateUser(_ context.Context, req *pb.CreateUserRequest) (*pb.C
 	}
 
 	return &pb.CreateUserResponse{
-		User: &pb.User{
-			Id:       user.ID,
-			Name:     user.Name,
-			Email:    user.Email,
-			RoleName: user.Role.Name,
-		},
+		User: userToProtobufUser(&user),
 	}, nil
 }
 
@@ -86,12 +81,7 @@ func (s *Server) UpdateUser(_ context.Context, req *pb.UpdateUserRequest) (*pb.U
 	}
 
 	return &pb.UpdateUserResponse{
-		User: &pb.User{
-			Id:       user.ID,
-			Name:     user.Name,
-			Email:    user.Email,
-			RoleName: user.Role.Name,
-		},
+		User: userToProtobufUser(user),
 	}, nil
 }
 
@@ -150,11 +140,55 @@ func (s *Server) GetUser(_ context.Context, req *pb.GetUserRequest) (*pb.GetUser
 	}
 
 	return &pb.GetUserResponse{
-		User: &pb.User{
-			Id:       user.ID,
-			Name:     user.Name,
-			Email:    user.Email,
-			RoleName: user.Role.Name,
-		},
+		User: userToProtobufUser(user),
+	}, nil
+}
+
+func (s *Server) GetUserIDByToken(_ context.Context, req *pb.GetUserIDByTokenRequest) (*pb.GetUserIDByTokenResponse, error) {
+	token := &model.Token{
+		Scope: model.ScopeAuthentication,
+		Text:  req.Token.GetToken(),
+	}
+	err := token.DecodeBytes()
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, invalidTokenMsg)
+	}
+
+	userID, err := s.model.user.GetUserIDByToken(token)
+	if err != nil {
+		if errors.Is(err, model.ErrUserNotFound) {
+			return nil, status.Error(codes.Unauthenticated, invalidTokenMsg)
+		} else {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	return &pb.GetUserIDByTokenResponse{
+		UserId: userID,
+	}, nil
+}
+
+func (s *Server) GetUserPermissionsByToken(_ context.Context, req *pb.GetUserPermissionsByTokenRequest) (*pb.GetUserPermissionsByTokenResponse, error) {
+	token := &model.Token{
+		Scope: model.ScopeAuthentication,
+		Text:  req.Token.GetToken(),
+	}
+	err := token.DecodeBytes()
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, invalidTokenMsg)
+	}
+
+	userID, permissions, err := s.model.user.GetUserPermissionsByToken(token)
+	if err != nil {
+		if errors.Is(err, model.ErrUserNotFound) {
+			return nil, status.Error(codes.Unauthenticated, invalidTokenMsg)
+		} else {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	return &pb.GetUserPermissionsByTokenResponse{
+		UserId:      userID,
+		Permissions: permissions,
 	}, nil
 }

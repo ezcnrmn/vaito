@@ -9,7 +9,6 @@ package listing
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
@@ -23,27 +22,35 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type AuthenticationRequest struct {
+type Listing struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Token         []byte                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	Category      *Category              `protobuf:"bytes,4,opt,name=category,proto3" json:"category,omitempty"`
+	UserId        int64                  `protobuf:"varint,5,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Status        string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
+	Price         int64                  `protobuf:"varint,7,opt,name=price,proto3" json:"price,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	PublishedAt   *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=published_at,json=publishedAt,proto3,oneof" json:"published_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *AuthenticationRequest) Reset() {
-	*x = AuthenticationRequest{}
+func (x *Listing) Reset() {
+	*x = Listing{}
 	mi := &file_listing_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *AuthenticationRequest) String() string {
+func (x *Listing) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*AuthenticationRequest) ProtoMessage() {}
+func (*Listing) ProtoMessage() {}
 
-func (x *AuthenticationRequest) ProtoReflect() protoreflect.Message {
+func (x *Listing) ProtoReflect() protoreflect.Message {
 	mi := &file_listing_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -55,21 +62,285 @@ func (x *AuthenticationRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use AuthenticationRequest.ProtoReflect.Descriptor instead.
-func (*AuthenticationRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use Listing.ProtoReflect.Descriptor instead.
+func (*Listing) Descriptor() ([]byte, []int) {
 	return file_listing_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *AuthenticationRequest) GetToken() []byte {
+func (x *Listing) GetId() int64 {
 	if x != nil {
-		return x.Token
+		return x.Id
+	}
+	return 0
+}
+
+func (x *Listing) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *Listing) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *Listing) GetCategory() *Category {
+	if x != nil {
+		return x.Category
 	}
 	return nil
 }
 
+func (x *Listing) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *Listing) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *Listing) GetPrice() int64 {
+	if x != nil {
+		return x.Price
+	}
+	return 0
+}
+
+func (x *Listing) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *Listing) GetPublishedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.PublishedAt
+	}
+	return nil
+}
+
+type Authentication struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Authentication) Reset() {
+	*x = Authentication{}
+	mi := &file_listing_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Authentication) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Authentication) ProtoMessage() {}
+
+func (x *Authentication) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Authentication.ProtoReflect.Descriptor instead.
+func (*Authentication) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Authentication) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+type PaginationRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	Size          int32                  `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PaginationRequest) Reset() {
+	*x = PaginationRequest{}
+	mi := &file_listing_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PaginationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PaginationRequest) ProtoMessage() {}
+
+func (x *PaginationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PaginationRequest.ProtoReflect.Descriptor instead.
+func (*PaginationRequest) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *PaginationRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *PaginationRequest) GetSize() int32 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+type PaginationResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	Size          int32                  `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
+	Total         int32                  `protobuf:"varint,3,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PaginationResponse) Reset() {
+	*x = PaginationResponse{}
+	mi := &file_listing_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PaginationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PaginationResponse) ProtoMessage() {}
+
+func (x *PaginationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PaginationResponse.ProtoReflect.Descriptor instead.
+func (*PaginationResponse) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *PaginationResponse) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *PaginationResponse) GetSize() int32 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+func (x *PaginationResponse) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+type Category struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Category) Reset() {
+	*x = Category{}
+	mi := &file_listing_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Category) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Category) ProtoMessage() {}
+
+func (x *Category) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Category.ProtoReflect.Descriptor instead.
+func (*Category) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *Category) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *Category) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
 type CreateListingRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
-	Authentication *AuthenticationRequest `protobuf:"bytes,1,opt,name=authentication,proto3" json:"authentication,omitempty"`
+	Authentication *Authentication        `protobuf:"bytes,1,opt,name=authentication,proto3" json:"authentication,omitempty"`
 	Title          string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
 	Description    string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
 	CategoryId     int64                  `protobuf:"varint,4,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
@@ -80,7 +351,7 @@ type CreateListingRequest struct {
 
 func (x *CreateListingRequest) Reset() {
 	*x = CreateListingRequest{}
-	mi := &file_listing_proto_msgTypes[1]
+	mi := &file_listing_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -92,7 +363,7 @@ func (x *CreateListingRequest) String() string {
 func (*CreateListingRequest) ProtoMessage() {}
 
 func (x *CreateListingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_listing_proto_msgTypes[1]
+	mi := &file_listing_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -105,10 +376,10 @@ func (x *CreateListingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateListingRequest.ProtoReflect.Descriptor instead.
 func (*CreateListingRequest) Descriptor() ([]byte, []int) {
-	return file_listing_proto_rawDescGZIP(), []int{1}
+	return file_listing_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *CreateListingRequest) GetAuthentication() *AuthenticationRequest {
+func (x *CreateListingRequest) GetAuthentication() *Authentication {
 	if x != nil {
 		return x.Authentication
 	}
@@ -143,36 +414,28 @@ func (x *CreateListingRequest) GetPrice() int64 {
 	return 0
 }
 
-type ListingResponse struct {
+type CreateListingResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
-	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	Category      string                 `protobuf:"bytes,4,opt,name=category,proto3" json:"category,omitempty"`
-	UserId        int64                  `protobuf:"varint,5,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Status        string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
-	Price         int64                  `protobuf:"varint,7,opt,name=price,proto3" json:"price,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	PublishedAt   *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"`
+	Listing       *Listing               `protobuf:"bytes,1,opt,name=listing,proto3" json:"listing,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ListingResponse) Reset() {
-	*x = ListingResponse{}
-	mi := &file_listing_proto_msgTypes[2]
+func (x *CreateListingResponse) Reset() {
+	*x = CreateListingResponse{}
+	mi := &file_listing_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ListingResponse) String() string {
+func (x *CreateListingResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListingResponse) ProtoMessage() {}
+func (*CreateListingResponse) ProtoMessage() {}
 
-func (x *ListingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_listing_proto_msgTypes[2]
+func (x *CreateListingResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -183,77 +446,21 @@ func (x *ListingResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListingResponse.ProtoReflect.Descriptor instead.
-func (*ListingResponse) Descriptor() ([]byte, []int) {
-	return file_listing_proto_rawDescGZIP(), []int{2}
+// Deprecated: Use CreateListingResponse.ProtoReflect.Descriptor instead.
+func (*CreateListingResponse) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *ListingResponse) GetId() int64 {
+func (x *CreateListingResponse) GetListing() *Listing {
 	if x != nil {
-		return x.Id
-	}
-	return 0
-}
-
-func (x *ListingResponse) GetTitle() string {
-	if x != nil {
-		return x.Title
-	}
-	return ""
-}
-
-func (x *ListingResponse) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
-}
-
-func (x *ListingResponse) GetCategory() string {
-	if x != nil {
-		return x.Category
-	}
-	return ""
-}
-
-func (x *ListingResponse) GetUserId() int64 {
-	if x != nil {
-		return x.UserId
-	}
-	return 0
-}
-
-func (x *ListingResponse) GetStatus() string {
-	if x != nil {
-		return x.Status
-	}
-	return ""
-}
-
-func (x *ListingResponse) GetPrice() int64 {
-	if x != nil {
-		return x.Price
-	}
-	return 0
-}
-
-func (x *ListingResponse) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return nil
-}
-
-func (x *ListingResponse) GetPublishedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.PublishedAt
+		return x.Listing
 	}
 	return nil
 }
 
 type UpdateListingRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
-	Authentication *AuthenticationRequest `protobuf:"bytes,1,opt,name=authentication,proto3" json:"authentication,omitempty"`
+	Authentication *Authentication        `protobuf:"bytes,1,opt,name=authentication,proto3" json:"authentication,omitempty"`
 	Id             int64                  `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
 	Title          *string                `protobuf:"bytes,3,opt,name=title,proto3,oneof" json:"title,omitempty"`
 	Description    *string                `protobuf:"bytes,4,opt,name=description,proto3,oneof" json:"description,omitempty"`
@@ -265,7 +472,7 @@ type UpdateListingRequest struct {
 
 func (x *UpdateListingRequest) Reset() {
 	*x = UpdateListingRequest{}
-	mi := &file_listing_proto_msgTypes[3]
+	mi := &file_listing_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -277,7 +484,7 @@ func (x *UpdateListingRequest) String() string {
 func (*UpdateListingRequest) ProtoMessage() {}
 
 func (x *UpdateListingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_listing_proto_msgTypes[3]
+	mi := &file_listing_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -290,10 +497,10 @@ func (x *UpdateListingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateListingRequest.ProtoReflect.Descriptor instead.
 func (*UpdateListingRequest) Descriptor() ([]byte, []int) {
-	return file_listing_proto_rawDescGZIP(), []int{3}
+	return file_listing_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *UpdateListingRequest) GetAuthentication() *AuthenticationRequest {
+func (x *UpdateListingRequest) GetAuthentication() *Authentication {
 	if x != nil {
 		return x.Authentication
 	}
@@ -335,29 +542,28 @@ func (x *UpdateListingRequest) GetPrice() int64 {
 	return 0
 }
 
-type AuthenticatedListingRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Authentication *AuthenticationRequest `protobuf:"bytes,1,opt,name=authentication,proto3" json:"authentication,omitempty"`
-	Id             int64                  `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+type UpdateListingResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Listing       *Listing               `protobuf:"bytes,1,opt,name=listing,proto3" json:"listing,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
-func (x *AuthenticatedListingRequest) Reset() {
-	*x = AuthenticatedListingRequest{}
-	mi := &file_listing_proto_msgTypes[4]
+func (x *UpdateListingResponse) Reset() {
+	*x = UpdateListingResponse{}
+	mi := &file_listing_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *AuthenticatedListingRequest) String() string {
+func (x *UpdateListingResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*AuthenticatedListingRequest) ProtoMessage() {}
+func (*UpdateListingResponse) ProtoMessage() {}
 
-func (x *AuthenticatedListingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_listing_proto_msgTypes[4]
+func (x *UpdateListingResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -368,23 +574,104 @@ func (x *AuthenticatedListingRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use AuthenticatedListingRequest.ProtoReflect.Descriptor instead.
-func (*AuthenticatedListingRequest) Descriptor() ([]byte, []int) {
-	return file_listing_proto_rawDescGZIP(), []int{4}
+// Deprecated: Use UpdateListingResponse.ProtoReflect.Descriptor instead.
+func (*UpdateListingResponse) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *AuthenticatedListingRequest) GetAuthentication() *AuthenticationRequest {
+func (x *UpdateListingResponse) GetListing() *Listing {
+	if x != nil {
+		return x.Listing
+	}
+	return nil
+}
+
+type DeleteListingRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Authentication *Authentication        `protobuf:"bytes,1,opt,name=authentication,proto3" json:"authentication,omitempty"`
+	Id             int64                  `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *DeleteListingRequest) Reset() {
+	*x = DeleteListingRequest{}
+	mi := &file_listing_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteListingRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteListingRequest) ProtoMessage() {}
+
+func (x *DeleteListingRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteListingRequest.ProtoReflect.Descriptor instead.
+func (*DeleteListingRequest) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *DeleteListingRequest) GetAuthentication() *Authentication {
 	if x != nil {
 		return x.Authentication
 	}
 	return nil
 }
 
-func (x *AuthenticatedListingRequest) GetId() int64 {
+func (x *DeleteListingRequest) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
 	return 0
+}
+
+type DeleteListingResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteListingResponse) Reset() {
+	*x = DeleteListingResponse{}
+	mi := &file_listing_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteListingResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteListingResponse) ProtoMessage() {}
+
+func (x *DeleteListingResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteListingResponse.ProtoReflect.Descriptor instead.
+func (*DeleteListingResponse) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{10}
 }
 
 type GetListingRequest struct {
@@ -396,7 +683,7 @@ type GetListingRequest struct {
 
 func (x *GetListingRequest) Reset() {
 	*x = GetListingRequest{}
-	mi := &file_listing_proto_msgTypes[5]
+	mi := &file_listing_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -408,7 +695,7 @@ func (x *GetListingRequest) String() string {
 func (*GetListingRequest) ProtoMessage() {}
 
 func (x *GetListingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_listing_proto_msgTypes[5]
+	mi := &file_listing_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -421,7 +708,7 @@ func (x *GetListingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetListingRequest.ProtoReflect.Descriptor instead.
 func (*GetListingRequest) Descriptor() ([]byte, []int) {
-	return file_listing_proto_rawDescGZIP(), []int{5}
+	return file_listing_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *GetListingRequest) GetId() int64 {
@@ -431,17 +718,156 @@ func (x *GetListingRequest) GetId() int64 {
 	return 0
 }
 
+type GetListingResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Listing       *Listing               `protobuf:"bytes,1,opt,name=listing,proto3" json:"listing,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetListingResponse) Reset() {
+	*x = GetListingResponse{}
+	mi := &file_listing_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetListingResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetListingResponse) ProtoMessage() {}
+
+func (x *GetListingResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetListingResponse.ProtoReflect.Descriptor instead.
+func (*GetListingResponse) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *GetListingResponse) GetListing() *Listing {
+	if x != nil {
+		return x.Listing
+	}
+	return nil
+}
+
+type GetUserListingRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Authentication *Authentication        `protobuf:"bytes,1,opt,name=authentication,proto3" json:"authentication,omitempty"`
+	Id             int64                  `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *GetUserListingRequest) Reset() {
+	*x = GetUserListingRequest{}
+	mi := &file_listing_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUserListingRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUserListingRequest) ProtoMessage() {}
+
+func (x *GetUserListingRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUserListingRequest.ProtoReflect.Descriptor instead.
+func (*GetUserListingRequest) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *GetUserListingRequest) GetAuthentication() *Authentication {
+	if x != nil {
+		return x.Authentication
+	}
+	return nil
+}
+
+func (x *GetUserListingRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type GetUserListingResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Listing       *Listing               `protobuf:"bytes,1,opt,name=listing,proto3" json:"listing,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUserListingResponse) Reset() {
+	*x = GetUserListingResponse{}
+	mi := &file_listing_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUserListingResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUserListingResponse) ProtoMessage() {}
+
+func (x *GetUserListingResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUserListingResponse.ProtoReflect.Descriptor instead.
+func (*GetUserListingResponse) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *GetUserListingResponse) GetListing() *Listing {
+	if x != nil {
+		return x.Listing
+	}
+	return nil
+}
+
 type GetActiveListingsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
-	Size          int32                  `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
+	Pagination    *PaginationRequest     `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetActiveListingsRequest) Reset() {
 	*x = GetActiveListingsRequest{}
-	mi := &file_listing_proto_msgTypes[6]
+	mi := &file_listing_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -453,7 +879,7 @@ func (x *GetActiveListingsRequest) String() string {
 func (*GetActiveListingsRequest) ProtoMessage() {}
 
 func (x *GetActiveListingsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_listing_proto_msgTypes[6]
+	mi := &file_listing_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -466,46 +892,39 @@ func (x *GetActiveListingsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetActiveListingsRequest.ProtoReflect.Descriptor instead.
 func (*GetActiveListingsRequest) Descriptor() ([]byte, []int) {
-	return file_listing_proto_rawDescGZIP(), []int{6}
+	return file_listing_proto_rawDescGZIP(), []int{15}
 }
 
-func (x *GetActiveListingsRequest) GetPage() int32 {
+func (x *GetActiveListingsRequest) GetPagination() *PaginationRequest {
 	if x != nil {
-		return x.Page
+		return x.Pagination
 	}
-	return 0
+	return nil
 }
 
-func (x *GetActiveListingsRequest) GetSize() int32 {
-	if x != nil {
-		return x.Size
-	}
-	return 0
-}
-
-type ListingPaginatedResponse struct {
+type GetActiveListingsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*ListingResponse     `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Items         []*Listing             `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
 	Pagination    *PaginationResponse    `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ListingPaginatedResponse) Reset() {
-	*x = ListingPaginatedResponse{}
-	mi := &file_listing_proto_msgTypes[7]
+func (x *GetActiveListingsResponse) Reset() {
+	*x = GetActiveListingsResponse{}
+	mi := &file_listing_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ListingPaginatedResponse) String() string {
+func (x *GetActiveListingsResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListingPaginatedResponse) ProtoMessage() {}
+func (*GetActiveListingsResponse) ProtoMessage() {}
 
-func (x *ListingPaginatedResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_listing_proto_msgTypes[7]
+func (x *GetActiveListingsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -516,19 +935,19 @@ func (x *ListingPaginatedResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListingPaginatedResponse.ProtoReflect.Descriptor instead.
-func (*ListingPaginatedResponse) Descriptor() ([]byte, []int) {
-	return file_listing_proto_rawDescGZIP(), []int{7}
+// Deprecated: Use GetActiveListingsResponse.ProtoReflect.Descriptor instead.
+func (*GetActiveListingsResponse) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{16}
 }
 
-func (x *ListingPaginatedResponse) GetItems() []*ListingResponse {
+func (x *GetActiveListingsResponse) GetItems() []*Listing {
 	if x != nil {
 		return x.Items
 	}
 	return nil
 }
 
-func (x *ListingPaginatedResponse) GetPagination() *PaginationResponse {
+func (x *GetActiveListingsResponse) GetPagination() *PaginationResponse {
 	if x != nil {
 		return x.Pagination
 	}
@@ -537,16 +956,15 @@ func (x *ListingPaginatedResponse) GetPagination() *PaginationResponse {
 
 type GetModerationListingsRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
-	Authentication *AuthenticationRequest `protobuf:"bytes,1,opt,name=authentication,proto3" json:"authentication,omitempty"`
-	Page           int32                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
-	Size           int32                  `protobuf:"varint,3,opt,name=size,proto3" json:"size,omitempty"`
+	Authentication *Authentication        `protobuf:"bytes,1,opt,name=authentication,proto3" json:"authentication,omitempty"`
+	Pagination     *PaginationRequest     `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
 
 func (x *GetModerationListingsRequest) Reset() {
 	*x = GetModerationListingsRequest{}
-	mi := &file_listing_proto_msgTypes[8]
+	mi := &file_listing_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -558,7 +976,7 @@ func (x *GetModerationListingsRequest) String() string {
 func (*GetModerationListingsRequest) ProtoMessage() {}
 
 func (x *GetModerationListingsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_listing_proto_msgTypes[8]
+	mi := &file_listing_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -571,54 +989,46 @@ func (x *GetModerationListingsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetModerationListingsRequest.ProtoReflect.Descriptor instead.
 func (*GetModerationListingsRequest) Descriptor() ([]byte, []int) {
-	return file_listing_proto_rawDescGZIP(), []int{8}
+	return file_listing_proto_rawDescGZIP(), []int{17}
 }
 
-func (x *GetModerationListingsRequest) GetAuthentication() *AuthenticationRequest {
+func (x *GetModerationListingsRequest) GetAuthentication() *Authentication {
 	if x != nil {
 		return x.Authentication
 	}
 	return nil
 }
 
-func (x *GetModerationListingsRequest) GetPage() int32 {
+func (x *GetModerationListingsRequest) GetPagination() *PaginationRequest {
 	if x != nil {
-		return x.Page
+		return x.Pagination
 	}
-	return 0
+	return nil
 }
 
-func (x *GetModerationListingsRequest) GetSize() int32 {
-	if x != nil {
-		return x.Size
-	}
-	return 0
-}
-
-type PaginationResponse struct {
+type GetModerationListingsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
-	Size          int32                  `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
-	Total         int32                  `protobuf:"varint,3,opt,name=total,proto3" json:"total,omitempty"`
+	Items         []*Listing             `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Pagination    *PaginationResponse    `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *PaginationResponse) Reset() {
-	*x = PaginationResponse{}
-	mi := &file_listing_proto_msgTypes[9]
+func (x *GetModerationListingsResponse) Reset() {
+	*x = GetModerationListingsResponse{}
+	mi := &file_listing_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *PaginationResponse) String() string {
+func (x *GetModerationListingsResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PaginationResponse) ProtoMessage() {}
+func (*GetModerationListingsResponse) ProtoMessage() {}
 
-func (x *PaginationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_listing_proto_msgTypes[9]
+func (x *GetModerationListingsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -629,44 +1039,37 @@ func (x *PaginationResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PaginationResponse.ProtoReflect.Descriptor instead.
-func (*PaginationResponse) Descriptor() ([]byte, []int) {
-	return file_listing_proto_rawDescGZIP(), []int{9}
+// Deprecated: Use GetModerationListingsResponse.ProtoReflect.Descriptor instead.
+func (*GetModerationListingsResponse) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{18}
 }
 
-func (x *PaginationResponse) GetPage() int32 {
+func (x *GetModerationListingsResponse) GetItems() []*Listing {
 	if x != nil {
-		return x.Page
+		return x.Items
 	}
-	return 0
+	return nil
 }
 
-func (x *PaginationResponse) GetSize() int32 {
+func (x *GetModerationListingsResponse) GetPagination() *PaginationResponse {
 	if x != nil {
-		return x.Size
+		return x.Pagination
 	}
-	return 0
-}
-
-func (x *PaginationResponse) GetTotal() int32 {
-	if x != nil {
-		return x.Total
-	}
-	return 0
+	return nil
 }
 
 type GetListingsByUserRequest struct {
-	state          protoimpl.MessageState                      `protogen:"open.v1"`
-	Authentication *AuthenticationRequest                      `protobuf:"bytes,1,opt,name=authentication,proto3" json:"authentication,omitempty"`
-	Id             int64                                       `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
-	Pagination     *GetListingsByUserRequest_PaginationRequest `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Authentication *Authentication        `protobuf:"bytes,1,opt,name=authentication,proto3" json:"authentication,omitempty"`
+	UserId         int64                  `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Pagination     *PaginationRequest     `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
 
 func (x *GetListingsByUserRequest) Reset() {
 	*x = GetListingsByUserRequest{}
-	mi := &file_listing_proto_msgTypes[10]
+	mi := &file_listing_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -678,7 +1081,7 @@ func (x *GetListingsByUserRequest) String() string {
 func (*GetListingsByUserRequest) ProtoMessage() {}
 
 func (x *GetListingsByUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_listing_proto_msgTypes[10]
+	mi := &file_listing_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -691,52 +1094,53 @@ func (x *GetListingsByUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetListingsByUserRequest.ProtoReflect.Descriptor instead.
 func (*GetListingsByUserRequest) Descriptor() ([]byte, []int) {
-	return file_listing_proto_rawDescGZIP(), []int{10}
+	return file_listing_proto_rawDescGZIP(), []int{19}
 }
 
-func (x *GetListingsByUserRequest) GetAuthentication() *AuthenticationRequest {
+func (x *GetListingsByUserRequest) GetAuthentication() *Authentication {
 	if x != nil {
 		return x.Authentication
 	}
 	return nil
 }
 
-func (x *GetListingsByUserRequest) GetId() int64 {
+func (x *GetListingsByUserRequest) GetUserId() int64 {
 	if x != nil {
-		return x.Id
+		return x.UserId
 	}
 	return 0
 }
 
-func (x *GetListingsByUserRequest) GetPagination() *GetListingsByUserRequest_PaginationRequest {
+func (x *GetListingsByUserRequest) GetPagination() *PaginationRequest {
 	if x != nil {
 		return x.Pagination
 	}
 	return nil
 }
 
-type CategoriesResponse struct {
-	state         protoimpl.MessageState         `protogen:"open.v1"`
-	Categories    []*CategoriesResponse_Category `protobuf:"bytes,1,rep,name=categories,proto3" json:"categories,omitempty"`
+type GetListingsByUserResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*Listing             `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Pagination    *PaginationResponse    `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CategoriesResponse) Reset() {
-	*x = CategoriesResponse{}
-	mi := &file_listing_proto_msgTypes[11]
+func (x *GetListingsByUserResponse) Reset() {
+	*x = GetListingsByUserResponse{}
+	mi := &file_listing_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CategoriesResponse) String() string {
+func (x *GetListingsByUserResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CategoriesResponse) ProtoMessage() {}
+func (*GetListingsByUserResponse) ProtoMessage() {}
 
-func (x *CategoriesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_listing_proto_msgTypes[11]
+func (x *GetListingsByUserResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -747,41 +1151,48 @@ func (x *CategoriesResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CategoriesResponse.ProtoReflect.Descriptor instead.
-func (*CategoriesResponse) Descriptor() ([]byte, []int) {
-	return file_listing_proto_rawDescGZIP(), []int{11}
+// Deprecated: Use GetListingsByUserResponse.ProtoReflect.Descriptor instead.
+func (*GetListingsByUserResponse) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{20}
 }
 
-func (x *CategoriesResponse) GetCategories() []*CategoriesResponse_Category {
+func (x *GetListingsByUserResponse) GetItems() []*Listing {
 	if x != nil {
-		return x.Categories
+		return x.Items
 	}
 	return nil
 }
 
-type GetListingsByUserRequest_PaginationRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
-	Size          int32                  `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+func (x *GetListingsByUserResponse) GetPagination() *PaginationResponse {
+	if x != nil {
+		return x.Pagination
+	}
+	return nil
 }
 
-func (x *GetListingsByUserRequest_PaginationRequest) Reset() {
-	*x = GetListingsByUserRequest_PaginationRequest{}
-	mi := &file_listing_proto_msgTypes[12]
+type SendListingToModerationRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Authentication *Authentication        `protobuf:"bytes,1,opt,name=authentication,proto3" json:"authentication,omitempty"`
+	Id             int64                  `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *SendListingToModerationRequest) Reset() {
+	*x = SendListingToModerationRequest{}
+	mi := &file_listing_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetListingsByUserRequest_PaginationRequest) String() string {
+func (x *SendListingToModerationRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetListingsByUserRequest_PaginationRequest) ProtoMessage() {}
+func (*SendListingToModerationRequest) ProtoMessage() {}
 
-func (x *GetListingsByUserRequest_PaginationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_listing_proto_msgTypes[12]
+func (x *SendListingToModerationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -792,75 +1203,491 @@ func (x *GetListingsByUserRequest_PaginationRequest) ProtoReflect() protoreflect
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetListingsByUserRequest_PaginationRequest.ProtoReflect.Descriptor instead.
-func (*GetListingsByUserRequest_PaginationRequest) Descriptor() ([]byte, []int) {
-	return file_listing_proto_rawDescGZIP(), []int{10, 0}
+// Deprecated: Use SendListingToModerationRequest.ProtoReflect.Descriptor instead.
+func (*SendListingToModerationRequest) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{21}
 }
 
-func (x *GetListingsByUserRequest_PaginationRequest) GetPage() int32 {
+func (x *SendListingToModerationRequest) GetAuthentication() *Authentication {
 	if x != nil {
-		return x.Page
+		return x.Authentication
 	}
-	return 0
+	return nil
 }
 
-func (x *GetListingsByUserRequest_PaginationRequest) GetSize() int32 {
-	if x != nil {
-		return x.Size
-	}
-	return 0
-}
-
-type CategoriesResponse_Category struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CategoriesResponse_Category) Reset() {
-	*x = CategoriesResponse_Category{}
-	mi := &file_listing_proto_msgTypes[13]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CategoriesResponse_Category) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CategoriesResponse_Category) ProtoMessage() {}
-
-func (x *CategoriesResponse_Category) ProtoReflect() protoreflect.Message {
-	mi := &file_listing_proto_msgTypes[13]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CategoriesResponse_Category.ProtoReflect.Descriptor instead.
-func (*CategoriesResponse_Category) Descriptor() ([]byte, []int) {
-	return file_listing_proto_rawDescGZIP(), []int{11, 0}
-}
-
-func (x *CategoriesResponse_Category) GetId() int64 {
+func (x *SendListingToModerationRequest) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
 	return 0
 }
 
-func (x *CategoriesResponse_Category) GetName() string {
+type SendListingToModerationResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SendListingToModerationResponse) Reset() {
+	*x = SendListingToModerationResponse{}
+	mi := &file_listing_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SendListingToModerationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendListingToModerationResponse) ProtoMessage() {}
+
+func (x *SendListingToModerationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[22]
 	if x != nil {
-		return x.Name
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
 	}
-	return ""
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendListingToModerationResponse.ProtoReflect.Descriptor instead.
+func (*SendListingToModerationResponse) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{22}
+}
+
+type ActivateListingRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Authentication *Authentication        `protobuf:"bytes,1,opt,name=authentication,proto3" json:"authentication,omitempty"`
+	Id             int64                  `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *ActivateListingRequest) Reset() {
+	*x = ActivateListingRequest{}
+	mi := &file_listing_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ActivateListingRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActivateListingRequest) ProtoMessage() {}
+
+func (x *ActivateListingRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ActivateListingRequest.ProtoReflect.Descriptor instead.
+func (*ActivateListingRequest) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *ActivateListingRequest) GetAuthentication() *Authentication {
+	if x != nil {
+		return x.Authentication
+	}
+	return nil
+}
+
+func (x *ActivateListingRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type ActivateListingResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ActivateListingResponse) Reset() {
+	*x = ActivateListingResponse{}
+	mi := &file_listing_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ActivateListingResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActivateListingResponse) ProtoMessage() {}
+
+func (x *ActivateListingResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ActivateListingResponse.ProtoReflect.Descriptor instead.
+func (*ActivateListingResponse) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{24}
+}
+
+type DeactivateListingRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Authentication *Authentication        `protobuf:"bytes,1,opt,name=authentication,proto3" json:"authentication,omitempty"`
+	Id             int64                  `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *DeactivateListingRequest) Reset() {
+	*x = DeactivateListingRequest{}
+	mi := &file_listing_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeactivateListingRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeactivateListingRequest) ProtoMessage() {}
+
+func (x *DeactivateListingRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeactivateListingRequest.ProtoReflect.Descriptor instead.
+func (*DeactivateListingRequest) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *DeactivateListingRequest) GetAuthentication() *Authentication {
+	if x != nil {
+		return x.Authentication
+	}
+	return nil
+}
+
+func (x *DeactivateListingRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type DeactivateListingResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeactivateListingResponse) Reset() {
+	*x = DeactivateListingResponse{}
+	mi := &file_listing_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeactivateListingResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeactivateListingResponse) ProtoMessage() {}
+
+func (x *DeactivateListingResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeactivateListingResponse.ProtoReflect.Descriptor instead.
+func (*DeactivateListingResponse) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{26}
+}
+
+type ActivateListingByModerationRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Authentication *Authentication        `protobuf:"bytes,1,opt,name=authentication,proto3" json:"authentication,omitempty"`
+	Id             int64                  `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *ActivateListingByModerationRequest) Reset() {
+	*x = ActivateListingByModerationRequest{}
+	mi := &file_listing_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ActivateListingByModerationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActivateListingByModerationRequest) ProtoMessage() {}
+
+func (x *ActivateListingByModerationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ActivateListingByModerationRequest.ProtoReflect.Descriptor instead.
+func (*ActivateListingByModerationRequest) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *ActivateListingByModerationRequest) GetAuthentication() *Authentication {
+	if x != nil {
+		return x.Authentication
+	}
+	return nil
+}
+
+func (x *ActivateListingByModerationRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type ActivateListingByModerationResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ActivateListingByModerationResponse) Reset() {
+	*x = ActivateListingByModerationResponse{}
+	mi := &file_listing_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ActivateListingByModerationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActivateListingByModerationResponse) ProtoMessage() {}
+
+func (x *ActivateListingByModerationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ActivateListingByModerationResponse.ProtoReflect.Descriptor instead.
+func (*ActivateListingByModerationResponse) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{28}
+}
+
+type DeactivateListingByModerationRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Authentication *Authentication        `protobuf:"bytes,1,opt,name=authentication,proto3" json:"authentication,omitempty"`
+	Id             int64                  `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *DeactivateListingByModerationRequest) Reset() {
+	*x = DeactivateListingByModerationRequest{}
+	mi := &file_listing_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeactivateListingByModerationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeactivateListingByModerationRequest) ProtoMessage() {}
+
+func (x *DeactivateListingByModerationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeactivateListingByModerationRequest.ProtoReflect.Descriptor instead.
+func (*DeactivateListingByModerationRequest) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *DeactivateListingByModerationRequest) GetAuthentication() *Authentication {
+	if x != nil {
+		return x.Authentication
+	}
+	return nil
+}
+
+func (x *DeactivateListingByModerationRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type DeactivateListingByModerationResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeactivateListingByModerationResponse) Reset() {
+	*x = DeactivateListingByModerationResponse{}
+	mi := &file_listing_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeactivateListingByModerationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeactivateListingByModerationResponse) ProtoMessage() {}
+
+func (x *DeactivateListingByModerationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeactivateListingByModerationResponse.ProtoReflect.Descriptor instead.
+func (*DeactivateListingByModerationResponse) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{30}
+}
+
+type GetCategoriesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetCategoriesRequest) Reset() {
+	*x = GetCategoriesRequest{}
+	mi := &file_listing_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetCategoriesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCategoriesRequest) ProtoMessage() {}
+
+func (x *GetCategoriesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCategoriesRequest.ProtoReflect.Descriptor instead.
+func (*GetCategoriesRequest) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{31}
+}
+
+type GetCategoriesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Categories    []*Category            `protobuf:"bytes,1,rep,name=categories,proto3" json:"categories,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetCategoriesResponse) Reset() {
+	*x = GetCategoriesResponse{}
+	mi := &file_listing_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetCategoriesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCategoriesResponse) ProtoMessage() {}
+
+func (x *GetCategoriesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_listing_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCategoriesResponse.ProtoReflect.Descriptor instead.
+func (*GetCategoriesResponse) Descriptor() ([]byte, []int) {
+	return file_listing_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *GetCategoriesResponse) GetCategories() []*Category {
+	if x != nil {
+		return x.Categories
+	}
+	return nil
 }
 
 var File_listing_proto protoreflect.FileDescriptor
@@ -868,29 +1695,42 @@ var File_listing_proto protoreflect.FileDescriptor
 const file_listing_proto_rawDesc = "" +
 	"\n" +
 	"\rlisting.proto\x12\n" +
-	"listing.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\"-\n" +
-	"\x15AuthenticationRequest\x12\x14\n" +
-	"\x05token\x18\x01 \x01(\fR\x05token\"\xd0\x01\n" +
-	"\x14CreateListingRequest\x12I\n" +
-	"\x0eauthentication\x18\x01 \x01(\v2!.listing.v1.AuthenticationRequestR\x0eauthentication\x12\x14\n" +
-	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1f\n" +
-	"\vcategory_id\x18\x04 \x01(\x03R\n" +
-	"categoryId\x12\x14\n" +
-	"\x05price\x18\x05 \x01(\x03R\x05price\"\xb6\x02\n" +
-	"\x0fListingResponse\x12\x0e\n" +
+	"listing.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xda\x02\n" +
+	"\aListing\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1a\n" +
-	"\bcategory\x18\x04 \x01(\tR\bcategory\x12\x17\n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x120\n" +
+	"\bcategory\x18\x04 \x01(\v2\x14.listing.v1.CategoryR\bcategory\x12\x17\n" +
 	"\auser_id\x18\x05 \x01(\x03R\x06userId\x12\x16\n" +
 	"\x06status\x18\x06 \x01(\tR\x06status\x12\x14\n" +
 	"\x05price\x18\a \x01(\x03R\x05price\x129\n" +
 	"\n" +
-	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12=\n" +
-	"\fpublished_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\vpublishedAt\"\xa8\x02\n" +
-	"\x14UpdateListingRequest\x12I\n" +
-	"\x0eauthentication\x18\x01 \x01(\v2!.listing.v1.AuthenticationRequestR\x0eauthentication\x12\x0e\n" +
+	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12B\n" +
+	"\fpublished_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampH\x00R\vpublishedAt\x88\x01\x01B\x0f\n" +
+	"\r_published_at\"&\n" +
+	"\x0eAuthentication\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\";\n" +
+	"\x11PaginationRequest\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x12\n" +
+	"\x04size\x18\x02 \x01(\x05R\x04size\"R\n" +
+	"\x12PaginationResponse\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x12\n" +
+	"\x04size\x18\x02 \x01(\x05R\x04size\x12\x14\n" +
+	"\x05total\x18\x03 \x01(\x05R\x05total\".\n" +
+	"\bCategory\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\"\xc9\x01\n" +
+	"\x14CreateListingRequest\x12B\n" +
+	"\x0eauthentication\x18\x01 \x01(\v2\x1a.listing.v1.AuthenticationR\x0eauthentication\x12\x14\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1f\n" +
+	"\vcategory_id\x18\x04 \x01(\x03R\n" +
+	"categoryId\x12\x14\n" +
+	"\x05price\x18\x05 \x01(\x03R\x05price\"F\n" +
+	"\x15CreateListingResponse\x12-\n" +
+	"\alisting\x18\x01 \x01(\v2\x13.listing.v1.ListingR\alisting\"\xa1\x02\n" +
+	"\x14UpdateListingRequest\x12B\n" +
+	"\x0eauthentication\x18\x01 \x01(\v2\x1a.listing.v1.AuthenticationR\x0eauthentication\x12\x0e\n" +
 	"\x02id\x18\x02 \x01(\x03R\x02id\x12\x19\n" +
 	"\x05title\x18\x03 \x01(\tH\x00R\x05title\x88\x01\x01\x12%\n" +
 	"\vdescription\x18\x04 \x01(\tH\x01R\vdescription\x88\x01\x01\x12$\n" +
@@ -900,60 +1740,93 @@ const file_listing_proto_rawDesc = "" +
 	"\x06_titleB\x0e\n" +
 	"\f_descriptionB\x0e\n" +
 	"\f_category_idB\b\n" +
-	"\x06_price\"x\n" +
-	"\x1bAuthenticatedListingRequest\x12I\n" +
-	"\x0eauthentication\x18\x01 \x01(\v2!.listing.v1.AuthenticationRequestR\x0eauthentication\x12\x0e\n" +
-	"\x02id\x18\x02 \x01(\x03R\x02id\"#\n" +
+	"\x06_price\"F\n" +
+	"\x15UpdateListingResponse\x12-\n" +
+	"\alisting\x18\x01 \x01(\v2\x13.listing.v1.ListingR\alisting\"j\n" +
+	"\x14DeleteListingRequest\x12B\n" +
+	"\x0eauthentication\x18\x01 \x01(\v2\x1a.listing.v1.AuthenticationR\x0eauthentication\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\x03R\x02id\"\x17\n" +
+	"\x15DeleteListingResponse\"#\n" +
 	"\x11GetListingRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\"B\n" +
-	"\x18GetActiveListingsRequest\x12\x12\n" +
-	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x12\n" +
-	"\x04size\x18\x02 \x01(\x05R\x04size\"\x8d\x01\n" +
-	"\x18ListingPaginatedResponse\x121\n" +
-	"\x05items\x18\x01 \x03(\v2\x1b.listing.v1.ListingResponseR\x05items\x12>\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"C\n" +
+	"\x12GetListingResponse\x12-\n" +
+	"\alisting\x18\x01 \x01(\v2\x13.listing.v1.ListingR\alisting\"k\n" +
+	"\x15GetUserListingRequest\x12B\n" +
+	"\x0eauthentication\x18\x01 \x01(\v2\x1a.listing.v1.AuthenticationR\x0eauthentication\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\x03R\x02id\"G\n" +
+	"\x16GetUserListingResponse\x12-\n" +
+	"\alisting\x18\x01 \x01(\v2\x13.listing.v1.ListingR\alisting\"Y\n" +
+	"\x18GetActiveListingsRequest\x12=\n" +
+	"\n" +
+	"pagination\x18\x01 \x01(\v2\x1d.listing.v1.PaginationRequestR\n" +
+	"pagination\"\x86\x01\n" +
+	"\x19GetActiveListingsResponse\x12)\n" +
+	"\x05items\x18\x01 \x03(\v2\x13.listing.v1.ListingR\x05items\x12>\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1e.listing.v1.PaginationResponseR\n" +
-	"pagination\"\x91\x01\n" +
-	"\x1cGetModerationListingsRequest\x12I\n" +
-	"\x0eauthentication\x18\x01 \x01(\v2!.listing.v1.AuthenticationRequestR\x0eauthentication\x12\x12\n" +
-	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x12\n" +
-	"\x04size\x18\x03 \x01(\x05R\x04size\"R\n" +
-	"\x12PaginationResponse\x12\x12\n" +
-	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x12\n" +
-	"\x04size\x18\x02 \x01(\x05R\x04size\x12\x14\n" +
-	"\x05total\x18\x03 \x01(\x05R\x05total\"\x8a\x02\n" +
-	"\x18GetListingsByUserRequest\x12I\n" +
-	"\x0eauthentication\x18\x01 \x01(\v2!.listing.v1.AuthenticationRequestR\x0eauthentication\x12\x0e\n" +
-	"\x02id\x18\x02 \x01(\x03R\x02id\x12V\n" +
+	"pagination\"\xa1\x01\n" +
+	"\x1cGetModerationListingsRequest\x12B\n" +
+	"\x0eauthentication\x18\x01 \x01(\v2\x1a.listing.v1.AuthenticationR\x0eauthentication\x12=\n" +
 	"\n" +
-	"pagination\x18\x03 \x01(\v26.listing.v1.GetListingsByUserRequest.PaginationRequestR\n" +
-	"pagination\x1a;\n" +
-	"\x11PaginationRequest\x12\x12\n" +
-	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x12\n" +
-	"\x04size\x18\x02 \x01(\x05R\x04size\"\x8d\x01\n" +
-	"\x12CategoriesResponse\x12G\n" +
+	"pagination\x18\x02 \x01(\v2\x1d.listing.v1.PaginationRequestR\n" +
+	"pagination\"\x8a\x01\n" +
+	"\x1dGetModerationListingsResponse\x12)\n" +
+	"\x05items\x18\x01 \x03(\v2\x13.listing.v1.ListingR\x05items\x12>\n" +
 	"\n" +
-	"categories\x18\x01 \x03(\v2'.listing.v1.CategoriesResponse.CategoryR\n" +
-	"categories\x1a.\n" +
-	"\bCategory\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name2\xf5\t\n" +
-	"\aListing\x12P\n" +
-	"\rCreateListing\x12 .listing.v1.CreateListingRequest\x1a\x1b.listing.v1.ListingResponse\"\x00\x12P\n" +
-	"\rUpdateListing\x12 .listing.v1.UpdateListingRequest\x1a\x1b.listing.v1.ListingResponse\"\x00\x12R\n" +
-	"\rDeleteListing\x12'.listing.v1.AuthenticatedListingRequest\x1a\x16.google.protobuf.Empty\"\x00\x12J\n" +
+	"pagination\x18\x02 \x01(\v2\x1e.listing.v1.PaginationResponseR\n" +
+	"pagination\"\xb6\x01\n" +
+	"\x18GetListingsByUserRequest\x12B\n" +
+	"\x0eauthentication\x18\x01 \x01(\v2\x1a.listing.v1.AuthenticationR\x0eauthentication\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\x03R\x06userId\x12=\n" +
 	"\n" +
-	"GetListing\x12\x1d.listing.v1.GetListingRequest\x1a\x1b.listing.v1.ListingResponse\"\x00\x12X\n" +
-	"\x0eGetUserListing\x12'.listing.v1.AuthenticatedListingRequest\x1a\x1b.listing.v1.ListingResponse\"\x00\x12a\n" +
-	"\x11GetActiveListings\x12$.listing.v1.GetActiveListingsRequest\x1a$.listing.v1.ListingPaginatedResponse\"\x00\x12i\n" +
-	"\x15GetModerationListings\x12(.listing.v1.GetModerationListingsRequest\x1a$.listing.v1.ListingPaginatedResponse\"\x00\x12a\n" +
-	"\x11GetListingsByUser\x12$.listing.v1.GetListingsByUserRequest\x1a$.listing.v1.ListingPaginatedResponse\"\x00\x12\\\n" +
-	"\x17SendListingToModeration\x12'.listing.v1.AuthenticatedListingRequest\x1a\x16.google.protobuf.Empty\"\x00\x12T\n" +
-	"\x0fActivateListing\x12'.listing.v1.AuthenticatedListingRequest\x1a\x16.google.protobuf.Empty\"\x00\x12V\n" +
-	"\x11DeactivateListing\x12'.listing.v1.AuthenticatedListingRequest\x1a\x16.google.protobuf.Empty\"\x00\x12`\n" +
-	"\x1bActivateListingByModeration\x12'.listing.v1.AuthenticatedListingRequest\x1a\x16.google.protobuf.Empty\"\x00\x12b\n" +
-	"\x1dDeactivateListingByModeration\x12'.listing.v1.AuthenticatedListingRequest\x1a\x16.google.protobuf.Empty\"\x00\x12I\n" +
-	"\rGetCategories\x12\x16.google.protobuf.Empty\x1a\x1e.listing.v1.CategoriesResponse\"\x00B)Z'github.com/ezcnrmn/vaito/gen/go/listingb\x06proto3"
+	"pagination\x18\x03 \x01(\v2\x1d.listing.v1.PaginationRequestR\n" +
+	"pagination\"\x86\x01\n" +
+	"\x19GetListingsByUserResponse\x12)\n" +
+	"\x05items\x18\x01 \x03(\v2\x13.listing.v1.ListingR\x05items\x12>\n" +
+	"\n" +
+	"pagination\x18\x02 \x01(\v2\x1e.listing.v1.PaginationResponseR\n" +
+	"pagination\"t\n" +
+	"\x1eSendListingToModerationRequest\x12B\n" +
+	"\x0eauthentication\x18\x01 \x01(\v2\x1a.listing.v1.AuthenticationR\x0eauthentication\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\x03R\x02id\"!\n" +
+	"\x1fSendListingToModerationResponse\"l\n" +
+	"\x16ActivateListingRequest\x12B\n" +
+	"\x0eauthentication\x18\x01 \x01(\v2\x1a.listing.v1.AuthenticationR\x0eauthentication\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\x03R\x02id\"\x19\n" +
+	"\x17ActivateListingResponse\"n\n" +
+	"\x18DeactivateListingRequest\x12B\n" +
+	"\x0eauthentication\x18\x01 \x01(\v2\x1a.listing.v1.AuthenticationR\x0eauthentication\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\x03R\x02id\"\x1b\n" +
+	"\x19DeactivateListingResponse\"x\n" +
+	"\"ActivateListingByModerationRequest\x12B\n" +
+	"\x0eauthentication\x18\x01 \x01(\v2\x1a.listing.v1.AuthenticationR\x0eauthentication\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\x03R\x02id\"%\n" +
+	"#ActivateListingByModerationResponse\"z\n" +
+	"$DeactivateListingByModerationRequest\x12B\n" +
+	"\x0eauthentication\x18\x01 \x01(\v2\x1a.listing.v1.AuthenticationR\x0eauthentication\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\x03R\x02id\"'\n" +
+	"%DeactivateListingByModerationResponse\"\x16\n" +
+	"\x14GetCategoriesRequest\"M\n" +
+	"\x15GetCategoriesResponse\x124\n" +
+	"\n" +
+	"categories\x18\x01 \x03(\v2\x14.listing.v1.CategoryR\n" +
+	"categories2\x96\v\n" +
+	"\x0eListingService\x12V\n" +
+	"\rCreateListing\x12 .listing.v1.CreateListingRequest\x1a!.listing.v1.CreateListingResponse\"\x00\x12V\n" +
+	"\rUpdateListing\x12 .listing.v1.UpdateListingRequest\x1a!.listing.v1.UpdateListingResponse\"\x00\x12V\n" +
+	"\rDeleteListing\x12 .listing.v1.DeleteListingRequest\x1a!.listing.v1.DeleteListingResponse\"\x00\x12M\n" +
+	"\n" +
+	"GetListing\x12\x1d.listing.v1.GetListingRequest\x1a\x1e.listing.v1.GetListingResponse\"\x00\x12Y\n" +
+	"\x0eGetUserListing\x12!.listing.v1.GetUserListingRequest\x1a\".listing.v1.GetUserListingResponse\"\x00\x12b\n" +
+	"\x11GetActiveListings\x12$.listing.v1.GetActiveListingsRequest\x1a%.listing.v1.GetActiveListingsResponse\"\x00\x12n\n" +
+	"\x15GetModerationListings\x12(.listing.v1.GetModerationListingsRequest\x1a).listing.v1.GetModerationListingsResponse\"\x00\x12b\n" +
+	"\x11GetListingsByUser\x12$.listing.v1.GetListingsByUserRequest\x1a%.listing.v1.GetListingsByUserResponse\"\x00\x12t\n" +
+	"\x17SendListingToModeration\x12*.listing.v1.SendListingToModerationRequest\x1a+.listing.v1.SendListingToModerationResponse\"\x00\x12\\\n" +
+	"\x0fActivateListing\x12\".listing.v1.ActivateListingRequest\x1a#.listing.v1.ActivateListingResponse\"\x00\x12b\n" +
+	"\x11DeactivateListing\x12$.listing.v1.DeactivateListingRequest\x1a%.listing.v1.DeactivateListingResponse\"\x00\x12\x80\x01\n" +
+	"\x1bActivateListingByModeration\x12..listing.v1.ActivateListingByModerationRequest\x1a/.listing.v1.ActivateListingByModerationResponse\"\x00\x12\x86\x01\n" +
+	"\x1dDeactivateListingByModeration\x120.listing.v1.DeactivateListingByModerationRequest\x1a1.listing.v1.DeactivateListingByModerationResponse\"\x00\x12V\n" +
+	"\rGetCategories\x12 .listing.v1.GetCategoriesRequest\x1a!.listing.v1.GetCategoriesResponse\"\x00B)Z'github.com/ezcnrmn/vaito/gen/go/listingb\x06proto3"
 
 var (
 	file_listing_proto_rawDescOnce sync.Once
@@ -967,70 +1840,105 @@ func file_listing_proto_rawDescGZIP() []byte {
 	return file_listing_proto_rawDescData
 }
 
-var file_listing_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_listing_proto_msgTypes = make([]protoimpl.MessageInfo, 33)
 var file_listing_proto_goTypes = []any{
-	(*AuthenticationRequest)(nil),                      // 0: listing.v1.AuthenticationRequest
-	(*CreateListingRequest)(nil),                       // 1: listing.v1.CreateListingRequest
-	(*ListingResponse)(nil),                            // 2: listing.v1.ListingResponse
-	(*UpdateListingRequest)(nil),                       // 3: listing.v1.UpdateListingRequest
-	(*AuthenticatedListingRequest)(nil),                // 4: listing.v1.AuthenticatedListingRequest
-	(*GetListingRequest)(nil),                          // 5: listing.v1.GetListingRequest
-	(*GetActiveListingsRequest)(nil),                   // 6: listing.v1.GetActiveListingsRequest
-	(*ListingPaginatedResponse)(nil),                   // 7: listing.v1.ListingPaginatedResponse
-	(*GetModerationListingsRequest)(nil),               // 8: listing.v1.GetModerationListingsRequest
-	(*PaginationResponse)(nil),                         // 9: listing.v1.PaginationResponse
-	(*GetListingsByUserRequest)(nil),                   // 10: listing.v1.GetListingsByUserRequest
-	(*CategoriesResponse)(nil),                         // 11: listing.v1.CategoriesResponse
-	(*GetListingsByUserRequest_PaginationRequest)(nil), // 12: listing.v1.GetListingsByUserRequest.PaginationRequest
-	(*CategoriesResponse_Category)(nil),                // 13: listing.v1.CategoriesResponse.Category
-	(*timestamppb.Timestamp)(nil),                      // 14: google.protobuf.Timestamp
-	(*emptypb.Empty)(nil),                              // 15: google.protobuf.Empty
+	(*Listing)(nil),                               // 0: listing.v1.Listing
+	(*Authentication)(nil),                        // 1: listing.v1.Authentication
+	(*PaginationRequest)(nil),                     // 2: listing.v1.PaginationRequest
+	(*PaginationResponse)(nil),                    // 3: listing.v1.PaginationResponse
+	(*Category)(nil),                              // 4: listing.v1.Category
+	(*CreateListingRequest)(nil),                  // 5: listing.v1.CreateListingRequest
+	(*CreateListingResponse)(nil),                 // 6: listing.v1.CreateListingResponse
+	(*UpdateListingRequest)(nil),                  // 7: listing.v1.UpdateListingRequest
+	(*UpdateListingResponse)(nil),                 // 8: listing.v1.UpdateListingResponse
+	(*DeleteListingRequest)(nil),                  // 9: listing.v1.DeleteListingRequest
+	(*DeleteListingResponse)(nil),                 // 10: listing.v1.DeleteListingResponse
+	(*GetListingRequest)(nil),                     // 11: listing.v1.GetListingRequest
+	(*GetListingResponse)(nil),                    // 12: listing.v1.GetListingResponse
+	(*GetUserListingRequest)(nil),                 // 13: listing.v1.GetUserListingRequest
+	(*GetUserListingResponse)(nil),                // 14: listing.v1.GetUserListingResponse
+	(*GetActiveListingsRequest)(nil),              // 15: listing.v1.GetActiveListingsRequest
+	(*GetActiveListingsResponse)(nil),             // 16: listing.v1.GetActiveListingsResponse
+	(*GetModerationListingsRequest)(nil),          // 17: listing.v1.GetModerationListingsRequest
+	(*GetModerationListingsResponse)(nil),         // 18: listing.v1.GetModerationListingsResponse
+	(*GetListingsByUserRequest)(nil),              // 19: listing.v1.GetListingsByUserRequest
+	(*GetListingsByUserResponse)(nil),             // 20: listing.v1.GetListingsByUserResponse
+	(*SendListingToModerationRequest)(nil),        // 21: listing.v1.SendListingToModerationRequest
+	(*SendListingToModerationResponse)(nil),       // 22: listing.v1.SendListingToModerationResponse
+	(*ActivateListingRequest)(nil),                // 23: listing.v1.ActivateListingRequest
+	(*ActivateListingResponse)(nil),               // 24: listing.v1.ActivateListingResponse
+	(*DeactivateListingRequest)(nil),              // 25: listing.v1.DeactivateListingRequest
+	(*DeactivateListingResponse)(nil),             // 26: listing.v1.DeactivateListingResponse
+	(*ActivateListingByModerationRequest)(nil),    // 27: listing.v1.ActivateListingByModerationRequest
+	(*ActivateListingByModerationResponse)(nil),   // 28: listing.v1.ActivateListingByModerationResponse
+	(*DeactivateListingByModerationRequest)(nil),  // 29: listing.v1.DeactivateListingByModerationRequest
+	(*DeactivateListingByModerationResponse)(nil), // 30: listing.v1.DeactivateListingByModerationResponse
+	(*GetCategoriesRequest)(nil),                  // 31: listing.v1.GetCategoriesRequest
+	(*GetCategoriesResponse)(nil),                 // 32: listing.v1.GetCategoriesResponse
+	(*timestamppb.Timestamp)(nil),                 // 33: google.protobuf.Timestamp
 }
 var file_listing_proto_depIdxs = []int32{
-	0,  // 0: listing.v1.CreateListingRequest.authentication:type_name -> listing.v1.AuthenticationRequest
-	14, // 1: listing.v1.ListingResponse.created_at:type_name -> google.protobuf.Timestamp
-	14, // 2: listing.v1.ListingResponse.published_at:type_name -> google.protobuf.Timestamp
-	0,  // 3: listing.v1.UpdateListingRequest.authentication:type_name -> listing.v1.AuthenticationRequest
-	0,  // 4: listing.v1.AuthenticatedListingRequest.authentication:type_name -> listing.v1.AuthenticationRequest
-	2,  // 5: listing.v1.ListingPaginatedResponse.items:type_name -> listing.v1.ListingResponse
-	9,  // 6: listing.v1.ListingPaginatedResponse.pagination:type_name -> listing.v1.PaginationResponse
-	0,  // 7: listing.v1.GetModerationListingsRequest.authentication:type_name -> listing.v1.AuthenticationRequest
-	0,  // 8: listing.v1.GetListingsByUserRequest.authentication:type_name -> listing.v1.AuthenticationRequest
-	12, // 9: listing.v1.GetListingsByUserRequest.pagination:type_name -> listing.v1.GetListingsByUserRequest.PaginationRequest
-	13, // 10: listing.v1.CategoriesResponse.categories:type_name -> listing.v1.CategoriesResponse.Category
-	1,  // 11: listing.v1.Listing.CreateListing:input_type -> listing.v1.CreateListingRequest
-	3,  // 12: listing.v1.Listing.UpdateListing:input_type -> listing.v1.UpdateListingRequest
-	4,  // 13: listing.v1.Listing.DeleteListing:input_type -> listing.v1.AuthenticatedListingRequest
-	5,  // 14: listing.v1.Listing.GetListing:input_type -> listing.v1.GetListingRequest
-	4,  // 15: listing.v1.Listing.GetUserListing:input_type -> listing.v1.AuthenticatedListingRequest
-	6,  // 16: listing.v1.Listing.GetActiveListings:input_type -> listing.v1.GetActiveListingsRequest
-	8,  // 17: listing.v1.Listing.GetModerationListings:input_type -> listing.v1.GetModerationListingsRequest
-	10, // 18: listing.v1.Listing.GetListingsByUser:input_type -> listing.v1.GetListingsByUserRequest
-	4,  // 19: listing.v1.Listing.SendListingToModeration:input_type -> listing.v1.AuthenticatedListingRequest
-	4,  // 20: listing.v1.Listing.ActivateListing:input_type -> listing.v1.AuthenticatedListingRequest
-	4,  // 21: listing.v1.Listing.DeactivateListing:input_type -> listing.v1.AuthenticatedListingRequest
-	4,  // 22: listing.v1.Listing.ActivateListingByModeration:input_type -> listing.v1.AuthenticatedListingRequest
-	4,  // 23: listing.v1.Listing.DeactivateListingByModeration:input_type -> listing.v1.AuthenticatedListingRequest
-	15, // 24: listing.v1.Listing.GetCategories:input_type -> google.protobuf.Empty
-	2,  // 25: listing.v1.Listing.CreateListing:output_type -> listing.v1.ListingResponse
-	2,  // 26: listing.v1.Listing.UpdateListing:output_type -> listing.v1.ListingResponse
-	15, // 27: listing.v1.Listing.DeleteListing:output_type -> google.protobuf.Empty
-	2,  // 28: listing.v1.Listing.GetListing:output_type -> listing.v1.ListingResponse
-	2,  // 29: listing.v1.Listing.GetUserListing:output_type -> listing.v1.ListingResponse
-	7,  // 30: listing.v1.Listing.GetActiveListings:output_type -> listing.v1.ListingPaginatedResponse
-	7,  // 31: listing.v1.Listing.GetModerationListings:output_type -> listing.v1.ListingPaginatedResponse
-	7,  // 32: listing.v1.Listing.GetListingsByUser:output_type -> listing.v1.ListingPaginatedResponse
-	15, // 33: listing.v1.Listing.SendListingToModeration:output_type -> google.protobuf.Empty
-	15, // 34: listing.v1.Listing.ActivateListing:output_type -> google.protobuf.Empty
-	15, // 35: listing.v1.Listing.DeactivateListing:output_type -> google.protobuf.Empty
-	15, // 36: listing.v1.Listing.ActivateListingByModeration:output_type -> google.protobuf.Empty
-	15, // 37: listing.v1.Listing.DeactivateListingByModeration:output_type -> google.protobuf.Empty
-	11, // 38: listing.v1.Listing.GetCategories:output_type -> listing.v1.CategoriesResponse
-	25, // [25:39] is the sub-list for method output_type
-	11, // [11:25] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	4,  // 0: listing.v1.Listing.category:type_name -> listing.v1.Category
+	33, // 1: listing.v1.Listing.created_at:type_name -> google.protobuf.Timestamp
+	33, // 2: listing.v1.Listing.published_at:type_name -> google.protobuf.Timestamp
+	1,  // 3: listing.v1.CreateListingRequest.authentication:type_name -> listing.v1.Authentication
+	0,  // 4: listing.v1.CreateListingResponse.listing:type_name -> listing.v1.Listing
+	1,  // 5: listing.v1.UpdateListingRequest.authentication:type_name -> listing.v1.Authentication
+	0,  // 6: listing.v1.UpdateListingResponse.listing:type_name -> listing.v1.Listing
+	1,  // 7: listing.v1.DeleteListingRequest.authentication:type_name -> listing.v1.Authentication
+	0,  // 8: listing.v1.GetListingResponse.listing:type_name -> listing.v1.Listing
+	1,  // 9: listing.v1.GetUserListingRequest.authentication:type_name -> listing.v1.Authentication
+	0,  // 10: listing.v1.GetUserListingResponse.listing:type_name -> listing.v1.Listing
+	2,  // 11: listing.v1.GetActiveListingsRequest.pagination:type_name -> listing.v1.PaginationRequest
+	0,  // 12: listing.v1.GetActiveListingsResponse.items:type_name -> listing.v1.Listing
+	3,  // 13: listing.v1.GetActiveListingsResponse.pagination:type_name -> listing.v1.PaginationResponse
+	1,  // 14: listing.v1.GetModerationListingsRequest.authentication:type_name -> listing.v1.Authentication
+	2,  // 15: listing.v1.GetModerationListingsRequest.pagination:type_name -> listing.v1.PaginationRequest
+	0,  // 16: listing.v1.GetModerationListingsResponse.items:type_name -> listing.v1.Listing
+	3,  // 17: listing.v1.GetModerationListingsResponse.pagination:type_name -> listing.v1.PaginationResponse
+	1,  // 18: listing.v1.GetListingsByUserRequest.authentication:type_name -> listing.v1.Authentication
+	2,  // 19: listing.v1.GetListingsByUserRequest.pagination:type_name -> listing.v1.PaginationRequest
+	0,  // 20: listing.v1.GetListingsByUserResponse.items:type_name -> listing.v1.Listing
+	3,  // 21: listing.v1.GetListingsByUserResponse.pagination:type_name -> listing.v1.PaginationResponse
+	1,  // 22: listing.v1.SendListingToModerationRequest.authentication:type_name -> listing.v1.Authentication
+	1,  // 23: listing.v1.ActivateListingRequest.authentication:type_name -> listing.v1.Authentication
+	1,  // 24: listing.v1.DeactivateListingRequest.authentication:type_name -> listing.v1.Authentication
+	1,  // 25: listing.v1.ActivateListingByModerationRequest.authentication:type_name -> listing.v1.Authentication
+	1,  // 26: listing.v1.DeactivateListingByModerationRequest.authentication:type_name -> listing.v1.Authentication
+	4,  // 27: listing.v1.GetCategoriesResponse.categories:type_name -> listing.v1.Category
+	5,  // 28: listing.v1.ListingService.CreateListing:input_type -> listing.v1.CreateListingRequest
+	7,  // 29: listing.v1.ListingService.UpdateListing:input_type -> listing.v1.UpdateListingRequest
+	9,  // 30: listing.v1.ListingService.DeleteListing:input_type -> listing.v1.DeleteListingRequest
+	11, // 31: listing.v1.ListingService.GetListing:input_type -> listing.v1.GetListingRequest
+	13, // 32: listing.v1.ListingService.GetUserListing:input_type -> listing.v1.GetUserListingRequest
+	15, // 33: listing.v1.ListingService.GetActiveListings:input_type -> listing.v1.GetActiveListingsRequest
+	17, // 34: listing.v1.ListingService.GetModerationListings:input_type -> listing.v1.GetModerationListingsRequest
+	19, // 35: listing.v1.ListingService.GetListingsByUser:input_type -> listing.v1.GetListingsByUserRequest
+	21, // 36: listing.v1.ListingService.SendListingToModeration:input_type -> listing.v1.SendListingToModerationRequest
+	23, // 37: listing.v1.ListingService.ActivateListing:input_type -> listing.v1.ActivateListingRequest
+	25, // 38: listing.v1.ListingService.DeactivateListing:input_type -> listing.v1.DeactivateListingRequest
+	27, // 39: listing.v1.ListingService.ActivateListingByModeration:input_type -> listing.v1.ActivateListingByModerationRequest
+	29, // 40: listing.v1.ListingService.DeactivateListingByModeration:input_type -> listing.v1.DeactivateListingByModerationRequest
+	31, // 41: listing.v1.ListingService.GetCategories:input_type -> listing.v1.GetCategoriesRequest
+	6,  // 42: listing.v1.ListingService.CreateListing:output_type -> listing.v1.CreateListingResponse
+	8,  // 43: listing.v1.ListingService.UpdateListing:output_type -> listing.v1.UpdateListingResponse
+	10, // 44: listing.v1.ListingService.DeleteListing:output_type -> listing.v1.DeleteListingResponse
+	12, // 45: listing.v1.ListingService.GetListing:output_type -> listing.v1.GetListingResponse
+	14, // 46: listing.v1.ListingService.GetUserListing:output_type -> listing.v1.GetUserListingResponse
+	16, // 47: listing.v1.ListingService.GetActiveListings:output_type -> listing.v1.GetActiveListingsResponse
+	18, // 48: listing.v1.ListingService.GetModerationListings:output_type -> listing.v1.GetModerationListingsResponse
+	20, // 49: listing.v1.ListingService.GetListingsByUser:output_type -> listing.v1.GetListingsByUserResponse
+	22, // 50: listing.v1.ListingService.SendListingToModeration:output_type -> listing.v1.SendListingToModerationResponse
+	24, // 51: listing.v1.ListingService.ActivateListing:output_type -> listing.v1.ActivateListingResponse
+	26, // 52: listing.v1.ListingService.DeactivateListing:output_type -> listing.v1.DeactivateListingResponse
+	28, // 53: listing.v1.ListingService.ActivateListingByModeration:output_type -> listing.v1.ActivateListingByModerationResponse
+	30, // 54: listing.v1.ListingService.DeactivateListingByModeration:output_type -> listing.v1.DeactivateListingByModerationResponse
+	32, // 55: listing.v1.ListingService.GetCategories:output_type -> listing.v1.GetCategoriesResponse
+	42, // [42:56] is the sub-list for method output_type
+	28, // [28:42] is the sub-list for method input_type
+	28, // [28:28] is the sub-list for extension type_name
+	28, // [28:28] is the sub-list for extension extendee
+	0,  // [0:28] is the sub-list for field type_name
 }
 
 func init() { file_listing_proto_init() }
@@ -1038,14 +1946,15 @@ func file_listing_proto_init() {
 	if File_listing_proto != nil {
 		return
 	}
-	file_listing_proto_msgTypes[3].OneofWrappers = []any{}
+	file_listing_proto_msgTypes[0].OneofWrappers = []any{}
+	file_listing_proto_msgTypes[7].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_listing_proto_rawDesc), len(file_listing_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   33,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

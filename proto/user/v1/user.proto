@@ -80,7 +80,7 @@ message GetUserPermissionsByTokenRequest {
   Token token = 1;
 }
 message GetUserPermissionsByTokenResponse {
-  GetUserIDByTokenResponse user = 1;
+  int64 user_id = 1;
 
   repeated string permissions = 2;
 }

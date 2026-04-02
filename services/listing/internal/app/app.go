@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	pb "github.com/ezcnrmn/vaito/gen/go/listing"
+	pbUser "github.com/ezcnrmn/vaito/gen/go/user"
 	"github.com/ezcnrmn/vaito/services/listing/internal/server"
 	"google.golang.org/grpc"
 )
@@ -16,15 +17,21 @@ import (
 type App struct {
 	log        *slog.Logger
 	gRPCServer *grpc.Server
+	services   struct {
+		user pbUser.UserServiceClient
+	}
 }
 
-func New(logger *slog.Logger, db *sql.DB) *App {
+func New(logger *slog.Logger, db *sql.DB, userClientConn *grpc.ClientConn) *App {
+	user := pbUser.NewUserServiceClient(userClientConn)
+
 	s := grpc.NewServer()
-	pb.RegisterListingServiceServer(s, server.NewServer(db, logger))
+	pb.RegisterListingServiceServer(s, server.NewServer(db, logger, user))
 
 	app := &App{
 		log:        logger,
 		gRPCServer: s,
+		services:   struct{ user pbUser.UserServiceClient }{user: user},
 	}
 
 	return app

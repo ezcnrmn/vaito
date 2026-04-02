@@ -762,9 +762,9 @@ func (x *GetUserPermissionsByTokenRequest) GetToken() *Token {
 }
 
 type GetUserPermissionsByTokenResponse struct {
-	state         protoimpl.MessageState    `protogen:"open.v1"`
-	User          *GetUserIDByTokenResponse `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
-	Permissions   []string                  `protobuf:"bytes,2,rep,name=permissions,proto3" json:"permissions,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Permissions   []string               `protobuf:"bytes,2,rep,name=permissions,proto3" json:"permissions,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -799,11 +799,11 @@ func (*GetUserPermissionsByTokenResponse) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{15}
 }
 
-func (x *GetUserPermissionsByTokenResponse) GetUser() *GetUserIDByTokenResponse {
+func (x *GetUserPermissionsByTokenResponse) GetUserId() int64 {
 	if x != nil {
-		return x.User
+		return x.UserId
 	}
-	return nil
+	return 0
 }
 
 func (x *GetUserPermissionsByTokenResponse) GetPermissions() []string {
@@ -860,9 +860,9 @@ const file_user_proto_rawDesc = "" +
 	"\x18GetUserIDByTokenResponse\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\"H\n" +
 	" GetUserPermissionsByTokenRequest\x12$\n" +
-	"\x05token\x18\x01 \x01(\v2\x0e.user.v1.TokenR\x05token\"|\n" +
-	"!GetUserPermissionsByTokenResponse\x125\n" +
-	"\x04user\x18\x01 \x01(\v2!.user.v1.GetUserIDByTokenResponseR\x04user\x12 \n" +
+	"\x05token\x18\x01 \x01(\v2\x0e.user.v1.TokenR\x05token\"^\n" +
+	"!GetUserPermissionsByTokenResponse\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12 \n" +
 	"\vpermissions\x18\x02 \x03(\tR\vpermissions2\xec\x04\n" +
 	"\vUserService\x12G\n" +
 	"\n" +
@@ -915,26 +915,25 @@ var file_user_proto_depIdxs = []int32{
 	1,  // 5: user.v1.AuthenticateUserResponse.token:type_name -> user.v1.Token
 	1,  // 6: user.v1.GetUserIDByTokenRequest.token:type_name -> user.v1.Token
 	1,  // 7: user.v1.GetUserPermissionsByTokenRequest.token:type_name -> user.v1.Token
-	13, // 8: user.v1.GetUserPermissionsByTokenResponse.user:type_name -> user.v1.GetUserIDByTokenResponse
-	2,  // 9: user.v1.UserService.CreateUser:input_type -> user.v1.CreateUserRequest
-	4,  // 10: user.v1.UserService.UpdateUser:input_type -> user.v1.UpdateUserRequest
-	6,  // 11: user.v1.UserService.UpdateUserPassword:input_type -> user.v1.UpdateUserPasswordRequest
-	8,  // 12: user.v1.UserService.GetUser:input_type -> user.v1.GetUserRequest
-	10, // 13: user.v1.UserService.AuthenticateUser:input_type -> user.v1.AuthenticateUserRequest
-	12, // 14: user.v1.UserService.GetUserIDByToken:input_type -> user.v1.GetUserIDByTokenRequest
-	14, // 15: user.v1.UserService.GetUserPermissionsByToken:input_type -> user.v1.GetUserPermissionsByTokenRequest
-	3,  // 16: user.v1.UserService.CreateUser:output_type -> user.v1.CreateUserResponse
-	5,  // 17: user.v1.UserService.UpdateUser:output_type -> user.v1.UpdateUserResponse
-	7,  // 18: user.v1.UserService.UpdateUserPassword:output_type -> user.v1.UpdateUserPasswordResponse
-	9,  // 19: user.v1.UserService.GetUser:output_type -> user.v1.GetUserResponse
-	11, // 20: user.v1.UserService.AuthenticateUser:output_type -> user.v1.AuthenticateUserResponse
-	13, // 21: user.v1.UserService.GetUserIDByToken:output_type -> user.v1.GetUserIDByTokenResponse
-	15, // 22: user.v1.UserService.GetUserPermissionsByToken:output_type -> user.v1.GetUserPermissionsByTokenResponse
-	16, // [16:23] is the sub-list for method output_type
-	9,  // [9:16] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	2,  // 8: user.v1.UserService.CreateUser:input_type -> user.v1.CreateUserRequest
+	4,  // 9: user.v1.UserService.UpdateUser:input_type -> user.v1.UpdateUserRequest
+	6,  // 10: user.v1.UserService.UpdateUserPassword:input_type -> user.v1.UpdateUserPasswordRequest
+	8,  // 11: user.v1.UserService.GetUser:input_type -> user.v1.GetUserRequest
+	10, // 12: user.v1.UserService.AuthenticateUser:input_type -> user.v1.AuthenticateUserRequest
+	12, // 13: user.v1.UserService.GetUserIDByToken:input_type -> user.v1.GetUserIDByTokenRequest
+	14, // 14: user.v1.UserService.GetUserPermissionsByToken:input_type -> user.v1.GetUserPermissionsByTokenRequest
+	3,  // 15: user.v1.UserService.CreateUser:output_type -> user.v1.CreateUserResponse
+	5,  // 16: user.v1.UserService.UpdateUser:output_type -> user.v1.UpdateUserResponse
+	7,  // 17: user.v1.UserService.UpdateUserPassword:output_type -> user.v1.UpdateUserPasswordResponse
+	9,  // 18: user.v1.UserService.GetUser:output_type -> user.v1.GetUserResponse
+	11, // 19: user.v1.UserService.AuthenticateUser:output_type -> user.v1.AuthenticateUserResponse
+	13, // 20: user.v1.UserService.GetUserIDByToken:output_type -> user.v1.GetUserIDByTokenResponse
+	15, // 21: user.v1.UserService.GetUserPermissionsByToken:output_type -> user.v1.GetUserPermissionsByTokenResponse
+	15, // [15:22] is the sub-list for method output_type
+	8,  // [8:15] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_user_proto_init() }

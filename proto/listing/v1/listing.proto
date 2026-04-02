@@ -2,94 +2,50 @@ syntax = "proto3";
 
 package listing.v1;
 
+import "google/protobuf/timestamp.proto";
+
 option go_package = "github.com/ezcnrmn/vaito/gen/go/listing";
 
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/empty.proto";
+service ListingService {
+  rpc CreateListing(CreateListingRequest) returns (CreateListingResponse) {}
+  rpc UpdateListing(UpdateListingRequest) returns (UpdateListingResponse) {}
+  rpc DeleteListing(DeleteListingRequest) returns (DeleteListingResponse) {}
 
-service Listing {
-  rpc CreateListing (CreateListingRequest) returns (ListingResponse) {}
-  rpc UpdateListing (UpdateListingRequest) returns (ListingResponse) {}
-  rpc DeleteListing (AuthenticatedListingRequest) returns (google.protobuf.Empty) {}
+  rpc GetListing(GetListingRequest) returns (GetListingResponse) {}
+  rpc GetUserListing(GetUserListingRequest) returns (GetUserListingResponse) {}
+  rpc GetActiveListings(GetActiveListingsRequest) returns (GetActiveListingsResponse) {}
+  rpc GetModerationListings(GetModerationListingsRequest) returns (GetModerationListingsResponse) {}
+  rpc GetListingsByUser(GetListingsByUserRequest) returns (GetListingsByUserResponse) {}
 
-  rpc GetListing (GetListingRequest) returns (ListingResponse) {}
-  rpc GetUserListing (AuthenticatedListingRequest) returns (ListingResponse) {}
-  rpc GetActiveListings (GetActiveListingsRequest) returns (ListingPaginatedResponse) {}
-  rpc GetModerationListings (GetModerationListingsRequest) returns (ListingPaginatedResponse) {}
-  rpc GetListingsByUser (GetListingsByUserRequest) returns (ListingPaginatedResponse) {}
+  rpc SendListingToModeration(SendListingToModerationRequest) returns (SendListingToModerationResponse) {}
+  rpc ActivateListing(ActivateListingRequest) returns (ActivateListingResponse) {}
+  rpc DeactivateListing(DeactivateListingRequest) returns (DeactivateListingResponse) {}
 
-  rpc SendListingToModeration (AuthenticatedListingRequest) returns (google.protobuf.Empty) {}
-  rpc ActivateListing (AuthenticatedListingRequest) returns (google.protobuf.Empty) {}
-  rpc DeactivateListing (AuthenticatedListingRequest) returns (google.protobuf.Empty) {}
+  rpc ActivateListingByModeration(ActivateListingByModerationRequest) returns (ActivateListingByModerationResponse) {}
+  rpc DeactivateListingByModeration(DeactivateListingByModerationRequest) returns (DeactivateListingByModerationResponse) {}
 
-  rpc ActivateListingByModeration (AuthenticatedListingRequest) returns (google.protobuf.Empty) {}
-  rpc DeactivateListingByModeration (AuthenticatedListingRequest) returns (google.protobuf.Empty) {}
-
-  rpc GetCategories (google.protobuf.Empty) returns (CategoriesResponse) {}
+  rpc GetCategories(GetCategoriesRequest) returns (GetCategoriesResponse) {}
 }
 
-message AuthenticationRequest {
-  bytes token = 1;
-}
-
-message CreateListingRequest {
-  AuthenticationRequest authentication = 1;
-
-  string title = 2;
-  string description = 3;
-  int64 category_id = 4;
-  int64 price = 5;
-}
-
-message ListingResponse {
+message Listing {
   int64 id = 1;
   string title = 2;
   string description = 3;
-  string category = 4;
+  Category category = 4;
   int64 user_id = 5;
   string status = 6;
   int64 price = 7;
   google.protobuf.Timestamp created_at = 8;
-  google.protobuf.Timestamp published_at = 9;
+  optional google.protobuf.Timestamp published_at = 9;
 }
 
-message UpdateListingRequest {
-  AuthenticationRequest authentication = 1;
-
-  int64 id = 2;
-
-  optional string title = 3;
-  optional string description = 4;
-  optional int64 category_id = 5;
-  optional int64 price = 6;
+message Authentication {
+  string token = 1;
 }
 
-message AuthenticatedListingRequest {
-  AuthenticationRequest authentication = 1;
-
-  int64 id = 2;
-}
-
-message GetListingRequest {
-  int64 id = 1;
-}
-
-message GetActiveListingsRequest {
+message PaginationRequest {
   int32 page = 1;
   int32 size = 2;
-}
-
-message ListingPaginatedResponse {
-  repeated ListingResponse items = 1;
-
-  PaginationResponse pagination = 2;
-}
-
-message GetModerationListingsRequest {
-  AuthenticationRequest authentication = 1;
-
-  int32 page = 2;
-  int32 size = 3;
 }
 
 message PaginationResponse {
@@ -98,25 +54,122 @@ message PaginationResponse {
   int32 total = 3;
 }
 
-message GetListingsByUserRequest {
-  AuthenticationRequest authentication = 1;
+message Category {
+  int64 id = 1;
+  string name = 2;
+}
+
+message CreateListingRequest {
+  Authentication authentication = 1;
+
+  string title = 2;
+  string description = 3;
+  int64 category_id = 4;
+  int64 price = 5;
+}
+message CreateListingResponse {
+  Listing listing = 1;
+}
+
+message UpdateListingRequest {
+  Authentication authentication = 1;
 
   int64 id = 2;
 
-  message PaginationRequest {
-    int32 page = 1;
-    int32 size = 2;
-  }
+  optional string title = 3;
+  optional string description = 4;
+  optional int64 category_id = 5;
+  optional int64 price = 6;
+}
+message UpdateListingResponse {
+  Listing listing = 1;
+}
+
+message DeleteListingRequest {
+  Authentication authentication = 1;
+  int64 id = 2;
+}
+message DeleteListingResponse {}
+
+message GetListingRequest {
+  int64 id = 1;
+}
+message GetListingResponse {
+  Listing listing = 1;
+}
+
+message GetUserListingRequest {
+  Authentication authentication = 1;
+  int64 id = 2;
+}
+message GetUserListingResponse {
+  Listing listing = 1;
+}
+
+message GetActiveListingsRequest {
+  PaginationRequest pagination = 1;
+}
+message GetActiveListingsResponse {
+  repeated Listing items = 1;
+
+  PaginationResponse pagination = 2;
+}
+
+message GetModerationListingsRequest {
+  Authentication authentication = 1;
+
+  PaginationRequest pagination = 2;
+}
+message GetModerationListingsResponse {
+  repeated Listing items = 1;
+
+  PaginationResponse pagination = 2;
+}
+
+message GetListingsByUserRequest {
+  Authentication authentication = 1;
+
+  int64 user_id = 2;
 
   PaginationRequest pagination = 3;
 }
+message GetListingsByUserResponse {
+  repeated Listing items = 1;
 
-message CategoriesResponse {
-  message Category {
-    int64 id = 1;
-    string name = 2;
-  }
-
-  repeated Category categories = 1;
+  PaginationResponse pagination = 2;
 }
 
+message SendListingToModerationRequest {
+  Authentication authentication = 1;
+  int64 id = 2;
+}
+message SendListingToModerationResponse {}
+
+message ActivateListingRequest {
+  Authentication authentication = 1;
+  int64 id = 2;
+}
+message ActivateListingResponse {}
+
+message DeactivateListingRequest {
+  Authentication authentication = 1;
+  int64 id = 2;
+}
+message DeactivateListingResponse {}
+
+message ActivateListingByModerationRequest {
+  Authentication authentication = 1;
+  int64 id = 2;
+}
+message ActivateListingByModerationResponse {}
+
+message DeactivateListingByModerationRequest {
+  Authentication authentication = 1;
+  int64 id = 2;
+}
+message DeactivateListingByModerationResponse {}
+
+message GetCategoriesRequest {}
+message GetCategoriesResponse {
+  repeated Category categories = 1;
+}

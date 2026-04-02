@@ -159,6 +159,75 @@ func (um UserModel) GetUserByToken(token *Token) (*User, error) {
 	return user, nil
 }
 
+func (um UserModel) GetUserIDByToken(token *Token) (int64, error) {
+	query := `
+	SELECT user_id
+	FROM tokens
+	WHERE hash = $1 AND scope = $2 AND expires_at > $3`
+
+	args := []any{token.Bytes, token.Scope, time.Now()}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var userID int64
+	err := um.DB.QueryRowContext(ctx, query, args...).Scan(&userID)
+	if err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			return 0, ErrUserNotFound
+		default:
+			return 0, err
+		}
+	}
+
+	return userID, nil
+}
+
+func (um UserModel) GetUserPermissionsByToken(token *Token) (int64, []string, error) {
+	query := `
+	SELECT DISTINCT u.id, p.code
+	FROM tokens t
+	JOIN users u ON u.id = t.user_id
+	LEFT JOIN roles r ON u.role_id = r.id
+	LEFT JOIN roles_permissions rp ON r.id = rp.role_id
+	LEFT JOIN permissions p ON rp.permission_id = p.id
+	WHERE t.hash = $1 AND t.scope = $2 AND t.expires_at > $3`
+
+	args := []any{token.Bytes, token.Scope, time.Now()}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := um.DB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return 0, nil, err
+	}
+	defer rows.Close()
+
+	var userID int64
+	var permissions []string
+	var found bool
+	for rows.Next() {
+		found = true
+		var p sql.NullString
+		err := rows.Scan(&userID, &p)
+		if err != nil {
+			return 0, nil, err
+		}
+		permissions = append(permissions, p.String)
+	}
+	if err = rows.Err(); err != nil {
+		return 0, nil, err
+	}
+
+	if !found {
+		return 0, nil, ErrUserNotFound
+	}
+
+	return userID, permissions, nil
+}
+
 func (um UserModel) UpdateUser(user *User) error {
 	query := `
 	UPDATE users

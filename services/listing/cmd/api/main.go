@@ -12,6 +12,8 @@ import (
 
 	"github.com/ezcnrmn/vaito/services/listing/internal/app"
 	_ "github.com/lib/pq"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
@@ -47,7 +49,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	app := app.New(logger, db)
+	userURL := fmt.Sprintf("%s:%s", os.Getenv("USER_HOST"), os.Getenv("USER_PORT"))
+	userGrpcClient, err := grpc.NewClient(userURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+	defer userGrpcClient.Close()
+
+	app := app.New(logger, db, userGrpcClient)
 
 	logger.Info("starting listing service", "port", port)
 	err = app.Run(listener)

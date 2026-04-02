@@ -1,20 +1,101 @@
 package handler
 
-import "net/http"
+import (
+	"context"
+	"net/http"
+	"time"
+
+	pbListing "github.com/ezcnrmn/vaito/gen/go/listing"
+	"github.com/ezcnrmn/vaito/services/gateway/internal/lib/contextutil"
+	"github.com/ezcnrmn/vaito/services/gateway/internal/lib/jsonutil"
+	"google.golang.org/grpc/codes"
+)
 
 func (h *Handler) CreateListing(w http.ResponseWriter, r *http.Request) {
-	var payload struct {
-		Title       string `json:"title"`
-		Description string `json:"description"`
-		CategoryID  int    `json:"categoryId"`
-		Price       int    `json:"price"`
+	token := contextutil.GetToken(r)
+	if token == "" {
+		sendMissingTokenError(w)
+		return
 	}
-	_ = payload
+
+	var payload struct {
+		Title       string `json:"title" validate:"required,min=10,max=300"`
+		Description string `json:"description" validate:"required"`
+		CategoryID  int64  `json:"category_id" validate:"required"`
+		Price       int64  `json:"price" validate:"required,min=1"`
+	}
+
+	err := jsonutil.ReadJSON(w, r, &payload)
+	if err != nil {
+		sendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	err = h.validator.Struct(payload)
+	if err != nil {
+		sendValidateError(w, err)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	resp, err := h.listingConn.CreateListing(ctx, &pbListing.CreateListingRequest{
+		Title:       payload.Title,
+		Description: payload.Description,
+		CategoryId:  payload.CategoryID,
+		Price:       payload.Price,
+
+		Authentication: &pbListing.Authentication{
+			Token: token,
+		},
+	})
+	if err != nil {
+		h.handleGRPCError(w, err, func(code codes.Code, msg string) {
+			switch code {
+			case codes.Unauthenticated:
+				sendError(w, http.StatusUnauthorized, msg)
+			case codes.PermissionDenied:
+				sendForbiddenError(w)
+			default:
+				h.log.Error(msg, "code", code)
+				sendInternalError(w)
+			}
+		})
+		return
+	}
+
+	writeListingResponse(w, resp.GetListing())
 }
 
 func (h *Handler) UpdateListing(w http.ResponseWriter, r *http.Request) {}
 
-func (h *Handler) GetListing(w http.ResponseWriter, r *http.Request) {}
+func (h *Handler) GetListing(w http.ResponseWriter, r *http.Request) {
+	id, err := readIDParam(r)
+	if err != nil {
+		sendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	resp, err := h.listingConn.GetListing(ctx, &pbListing.GetListingRequest{Id: id})
+	if err != nil {
+		h.handleGRPCError(w, err, func(code codes.Code, msg string) {
+			switch code {
+			case codes.NotFound:
+				sendError(w, http.StatusNotFound, msg)
+			default:
+				h.log.Error(msg, "code", code)
+				sendInternalError(w)
+			}
+		})
+		return
+	}
+
+	writeListingResponse(w, resp.GetListing())
+}
 
 func (h *Handler) DeleteListing(w http.ResponseWriter, r *http.Request) {}
 
@@ -26,7 +107,24 @@ func (h *Handler) DeactivateListing(w http.ResponseWriter, r *http.Request) {}
 
 func (h *Handler) GetListings(w http.ResponseWriter, r *http.Request) {}
 
-func (h *Handler) GetListingCategories(w http.ResponseWriter, r *http.Request) {}
+func (h *Handler) GetListingCategories(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	resp, err := h.listingConn.GetCategories(ctx, &pbListing.GetCategoriesRequest{})
+	if err != nil {
+		h.handleGRPCError(w, err, func(code codes.Code, msg string) {
+			switch code {
+			default:
+				h.log.Error(msg, "code", code)
+				sendInternalError(w)
+			}
+		})
+		return
+	}
+
+	writeCategoriesResponse(w, resp.GetCategories())
+}
 
 func (h *Handler) GetUserListings(w http.ResponseWriter, r *http.Request) {
 }
