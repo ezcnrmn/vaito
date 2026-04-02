@@ -58,10 +58,102 @@ func (s *Server) CreateListing(_ context.Context, req *pb.CreateListingRequest) 
 }
 
 func (s *Server) UpdateListing(_ context.Context, req *pb.UpdateListingRequest) (*pb.UpdateListingResponse, error) {
-	return &pb.UpdateListingResponse{}, nil
+	token := req.Authentication.GetToken()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	userPermissionResp, err := s.service.user.GetUserPermissionsByToken(ctx, &pbUser.GetUserPermissionsByTokenRequest{Token: &pbUser.Token{Token: token}})
+	if err != nil {
+		if s, ok := status.FromError(err); ok {
+			code := s.Code()
+			msg := s.Message()
+			switch code {
+			case codes.Unauthenticated:
+				return nil, status.Error(codes.Unauthenticated, msg)
+			default:
+				return nil, status.Error(codes.Internal, err.Error())
+			}
+		}
+	}
+
+	if i := slices.Index(userPermissionResp.Permissions, "listing:edit"); i == -1 {
+		return nil, status.Error(codes.PermissionDenied, permissionDeniedMsg)
+	}
+
+	id := req.GetId()
+	listing, err := s.model.listing.GetListing(id)
+	if err != nil {
+		if errors.Is(err, model.ErrListingNotFound) {
+			return nil, status.Error(codes.NotFound, err.Error())
+		} else {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	if listing.UserID != userPermissionResp.GetUserId() {
+		return nil, status.Error(codes.PermissionDenied, permissionDeniedMsg)
+	}
+
+	if req.Title != nil {
+		listing.Title = req.GetTitle()
+	}
+	if req.Description != nil {
+		listing.Description = req.GetDescription()
+	}
+	if req.Price != nil {
+		listing.Price = req.GetPrice()
+	}
+	if req.CategoryId != nil {
+		listing.Cetegory.ID = req.GetCategoryId()
+	}
+
+	err = s.model.listing.UpdateListing(listing)
+	if err != nil {
+		if errors.Is(err, model.ErrEditConflict) {
+			return nil, status.Error(codes.Aborted, err.Error())
+		} else {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	return &pb.UpdateListingResponse{
+		Listing: listingToProtobufListing(listing),
+	}, nil
 }
 
 func (s *Server) DeleteListing(_ context.Context, req *pb.DeleteListingRequest) (*pb.DeleteListingResponse, error) {
+	token := req.Authentication.GetToken()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	userPermissionResp, err := s.service.user.GetUserPermissionsByToken(ctx, &pbUser.GetUserPermissionsByTokenRequest{Token: &pbUser.Token{Token: token}})
+	if err != nil {
+		if s, ok := status.FromError(err); ok {
+			code := s.Code()
+			msg := s.Message()
+			switch code {
+			case codes.Unauthenticated:
+				return nil, status.Error(codes.Unauthenticated, msg)
+			default:
+				return nil, status.Error(codes.Internal, err.Error())
+			}
+		}
+	}
+
+	if i := slices.Index(userPermissionResp.Permissions, "listing:delete"); i == -1 {
+		return nil, status.Error(codes.PermissionDenied, permissionDeniedMsg)
+	}
+
+	id, userID := req.GetId(), userPermissionResp.GetUserId()
+	err = s.model.listing.DeleteListing(id, userID)
+	if err != nil {
+		if errors.Is(err, model.ErrListingNotFound) {
+			return nil, status.Error(codes.NotFound, err.Error())
+		} else {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
 	return &pb.DeleteListingResponse{}, nil
 }
 

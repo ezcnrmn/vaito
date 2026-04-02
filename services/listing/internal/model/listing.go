@@ -7,7 +7,10 @@ import (
 	"time"
 )
 
-var ErrListingNotFound = errors.New("listing not found")
+var (
+	ErrListingNotFound = errors.New("listing not found")
+	ErrEditConflict    = errors.New("edit conflict")
+)
 
 type Listing struct {
 	ID          int64
@@ -19,6 +22,7 @@ type Listing struct {
 	Price       int64
 	CreatedAt   time.Time
 	PublishedAt *time.Time
+	Version     int
 }
 
 type Category struct {
@@ -43,14 +47,39 @@ func (lm ListingModel) Insert(listing *Listing) error {
 
 	err := lm.DB.QueryRowContext(ctx, query, args...).Scan(&listing.ID, &listing.Cetegory.Name, &listing.Status, &listing.CreatedAt)
 
-	// TODO: check constraints
+	// TODO: consider check constraints
+
+	return err
+}
+
+func (lm ListingModel) UpdateListing(listing *Listing) error {
+	query := `
+	UPDATE listings
+	SET title = $1, description = $2, price = $3, category_id = $4, version = version+1
+	WHERE id = $5 AND version = $6
+	RETURNING version;`
+
+	args := []any{listing.Title, listing.Description, listing.Price, listing.Cetegory.ID, listing.ID, listing.Version}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := lm.DB.QueryRowContext(ctx, query, args...).Scan(&listing.Version)
+	if err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			return ErrEditConflict
+		default:
+			return err
+		}
+	}
 
 	return err
 }
 
 func (lm ListingModel) GetListing(id int64) (*Listing, error) {
 	query := `
-	SELECT l.id, l.title, l.description, l.category_id, c.name, l.user_id, s.name, l.price, l.created_at, l.published_at
+	SELECT l.id, l.title, l.description, l.category_id, c.name, l.user_id, s.name, l.price, l.created_at, l.published_at, l.version
 	FROM listings l
 	JOIN listing_statuses s ON l.status_id = s.id
 	JOIN categories c ON l.category_id = c.id
@@ -73,6 +102,7 @@ func (lm ListingModel) GetListing(id int64) (*Listing, error) {
 		&listing.Price,
 		&listing.CreatedAt,
 		&listing.PublishedAt,
+		&listing.Version,
 	)
 	if err != nil {
 		switch err {
@@ -84,6 +114,33 @@ func (lm ListingModel) GetListing(id int64) (*Listing, error) {
 	}
 
 	return listing, nil
+}
+
+func (lm ListingModel) DeleteListing(id, userID int64) error {
+	query := `
+	DELETE FROM listings
+	WHERE id = $1 AND user_id = $2;`
+
+	args := []any{id, userID}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	result, err := lm.DB.ExecContext(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return ErrListingNotFound
+	}
+
+	return nil
 }
 
 func (lm ListingModel) GetCategories() (*[]Category, error) {

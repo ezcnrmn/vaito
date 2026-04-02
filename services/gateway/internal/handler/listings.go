@@ -68,7 +68,77 @@ func (h *Handler) CreateListing(w http.ResponseWriter, r *http.Request) {
 	writeListingResponse(w, resp.GetListing())
 }
 
-func (h *Handler) UpdateListing(w http.ResponseWriter, r *http.Request) {}
+func (h *Handler) UpdateListing(w http.ResponseWriter, r *http.Request) {
+	token := contextutil.GetToken(r)
+	if token == "" {
+		sendMissingTokenError(w)
+		return
+	}
+
+	id, err := readIDParam(r)
+	if err != nil {
+		sendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	var payload struct {
+		Title       *string `json:"title" validate:"omitempty,min=10,max=300"`
+		Description *string `json:"description" validate:"omitempty"`
+		CategoryID  *int64  `json:"category_id" validate:"omitempty"`
+		Price       *int64  `json:"price" validate:"omitempty,min=1"`
+	}
+
+	err = jsonutil.ReadJSON(w, r, &payload)
+	if err != nil {
+		sendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	err = h.validator.Struct(payload)
+	if err != nil {
+		sendValidateError(w, err)
+		return
+	}
+	if payload.Title == nil && payload.Description == nil && payload.CategoryID == nil && payload.Price == nil {
+		sendError(w, http.StatusBadRequest, "you must specify at least one field")
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	resp, err := h.listingConn.UpdateListing(ctx, &pbListing.UpdateListingRequest{
+		Id:          id,
+		Title:       payload.Title,
+		Description: payload.Description,
+		CategoryId:  payload.CategoryID,
+		Price:       payload.Price,
+
+		Authentication: &pbListing.Authentication{
+			Token: token,
+		},
+	})
+	if err != nil {
+		h.handleGRPCError(w, err, func(code codes.Code, msg string) {
+			switch code {
+			case codes.Unauthenticated:
+				sendUnauthorizedError(w)
+			case codes.PermissionDenied:
+				sendForbiddenError(w)
+			case codes.NotFound:
+				sendError(w, http.StatusNotFound, msg)
+			case codes.Aborted:
+				sendError(w, http.StatusUnprocessableEntity, msg)
+			default:
+				h.log.Error(msg, "code", code)
+				sendInternalError(w)
+			}
+		})
+		return
+	}
+
+	writeListingResponse(w, resp.GetListing())
+}
 
 func (h *Handler) GetListing(w http.ResponseWriter, r *http.Request) {
 	id, err := readIDParam(r)
@@ -97,7 +167,45 @@ func (h *Handler) GetListing(w http.ResponseWriter, r *http.Request) {
 	writeListingResponse(w, resp.GetListing())
 }
 
-func (h *Handler) DeleteListing(w http.ResponseWriter, r *http.Request) {}
+func (h *Handler) DeleteListing(w http.ResponseWriter, r *http.Request) {
+	token := contextutil.GetToken(r)
+	if token == "" {
+		sendMissingTokenError(w)
+		return
+	}
+
+	id, err := readIDParam(r)
+	if err != nil {
+		sendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err = h.listingConn.DeleteListing(ctx, &pbListing.DeleteListingRequest{
+		Id: id,
+		Authentication: &pbListing.Authentication{
+			Token: token,
+		},
+	})
+	if err != nil {
+		h.handleGRPCError(w, err, func(code codes.Code, msg string) {
+			switch code {
+			case codes.PermissionDenied:
+				sendForbiddenError(w)
+			case codes.NotFound:
+				sendError(w, http.StatusNotFound, msg)
+			default:
+				h.log.Error(msg, "code", code)
+				sendInternalError(w)
+			}
+		})
+		return
+	}
+
+	sendSuccessMessage(w, "listing successfully deleted")
+}
 
 func (h *Handler) SendListingToModeration(w http.ResponseWriter, r *http.Request) {}
 

@@ -84,6 +84,11 @@ func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if payload.Name == nil && payload.Email == nil {
+		sendError(w, http.StatusBadRequest, "you must specify at least one field")
+		return
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
