@@ -11,6 +11,8 @@ import (
 	pb "github.com/ezcnrmn/vaito/gen/go/user"
 	"github.com/ezcnrmn/vaito/services/user/internal/server"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/health"
+	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
 type App struct {
@@ -19,13 +21,17 @@ type App struct {
 }
 
 func New(logger *slog.Logger, db *sql.DB) *App {
-	s := grpc.NewServer()
+	app := &App{log: logger}
+
+	s := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(app.recoverPanic),
+	)
 	pb.RegisterUserServiceServer(s, server.NewServer(db, logger))
 
-	app := &App{
-		log:        logger,
-		gRPCServer: s,
-	}
+	health := health.NewServer()
+	grpc_health_v1.RegisterHealthServer(s, health)
+
+	app.gRPCServer = s
 
 	return app
 }

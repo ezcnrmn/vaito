@@ -14,6 +14,7 @@ import (
 	pbListing "github.com/ezcnrmn/vaito/gen/go/listing"
 	pbUser "github.com/ezcnrmn/vaito/gen/go/user"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
 type App struct {
@@ -23,6 +24,11 @@ type App struct {
 	services   struct {
 		user    pbUser.UserServiceClient
 		listing pbListing.ListingServiceClient
+
+		health struct {
+			user    grpc_health_v1.HealthClient
+			listing grpc_health_v1.HealthClient
+		}
 	}
 }
 
@@ -36,6 +42,8 @@ func New(port string, logger *slog.Logger, userClient, listingClient *grpc.Clien
 	}
 	app.services.user = userConn
 	app.services.listing = listingConn
+	app.services.health.user = grpc_health_v1.NewHealthClient(userClient)
+	app.services.health.listing = grpc_health_v1.NewHealthClient(listingClient)
 
 	routes := app.routes()
 

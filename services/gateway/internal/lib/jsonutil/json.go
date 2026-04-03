@@ -63,10 +63,11 @@ func ReadJSON(w http.ResponseWriter, r *http.Request, dst any) error {
 	return nil
 }
 
-func WriteJSON(w http.ResponseWriter, status int, data Envelope) error {
+func WriteJSON(w http.ResponseWriter, status int, data Envelope) {
 	js, err := json.MarshalIndent(data, "", "\t")
 	if err != nil {
-		return err
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	js = append(js, '\n')
@@ -74,6 +75,4 @@ func WriteJSON(w http.ResponseWriter, status int, data Envelope) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	w.Write(js)
-
-	return nil
 }

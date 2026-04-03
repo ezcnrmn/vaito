@@ -8,6 +8,7 @@ import (
 	pbListing "github.com/ezcnrmn/vaito/gen/go/listing"
 	pbUser "github.com/ezcnrmn/vaito/gen/go/user"
 	"github.com/go-playground/validator/v10"
+	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
 type Handler struct {
@@ -15,9 +16,13 @@ type Handler struct {
 	validator   *validator.Validate
 	userConn    pbUser.UserServiceClient
 	listingConn pbListing.ListingServiceClient
+	health      struct {
+		user    grpc_health_v1.HealthClient
+		listing grpc_health_v1.HealthClient
+	}
 }
 
-func New(logger *slog.Logger, userConn pbUser.UserServiceClient, listingConn pbListing.ListingServiceClient) *Handler {
+func New(logger *slog.Logger, userConn pbUser.UserServiceClient, listingConn pbListing.ListingServiceClient, userHealthConn, listingHealthConn grpc_health_v1.HealthClient) *Handler {
 	validator := validator.New()
 	validator.RegisterValidation("lettersAndDigits", lettersAndDigits)
 	validator.RegisterTagNameFunc(func(fld reflect.StructField) string {
@@ -33,5 +38,12 @@ func New(logger *slog.Logger, userConn pbUser.UserServiceClient, listingConn pbL
 		validator:   validator,
 		userConn:    userConn,
 		listingConn: listingConn,
+		health: struct {
+			user    grpc_health_v1.HealthClient
+			listing grpc_health_v1.HealthClient
+		}{
+			user:    userHealthConn,
+			listing: listingHealthConn,
+		},
 	}
 }

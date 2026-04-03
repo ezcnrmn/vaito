@@ -13,7 +13,7 @@ import (
 const apiV1 = "/api/v1"
 
 func (a *App) routes() http.Handler {
-	handler := handler.New(a.log, a.services.user, a.services.listing)
+	handler := handler.New(a.log, a.services.user, a.services.listing, a.services.health.user, a.services.health.listing)
 	routes := httprouter.New()
 
 	routes.NotFound = http.HandlerFunc(handler.NotFound)
@@ -51,6 +51,7 @@ func (a *App) recoverPanic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
+				a.log.Error("panic", "method", r.Method, "path", r.URL.Path, "err", r)
 				w.Header().Set("Connection", "close")
 				w.WriteHeader(http.StatusInternalServerError)
 			}
