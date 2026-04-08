@@ -14,9 +14,12 @@ import (
 const unauthenticatedMsg = "invalid authentication credentials"
 
 func (s *Server) AuthenticateUser(_ context.Context, req *pb.AuthenticateUserRequest) (*pb.AuthenticateUserResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	email, password := req.GetEmail(), req.GetPassword()
 
-	user, err := s.model.user.GetUserByEmail(email)
+	user, err := s.model.user.GetUserByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, model.ErrUserNotFound) {
 			return nil, status.Error(codes.Unauthenticated, unauthenticatedMsg)
@@ -35,7 +38,7 @@ func (s *Server) AuthenticateUser(_ context.Context, req *pb.AuthenticateUserReq
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	err = s.model.token.Insert(token)
+	err = s.model.token.Insert(ctx, token)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

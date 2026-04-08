@@ -52,16 +52,13 @@ type UserModel struct {
 	DB *sql.DB
 }
 
-func (um UserModel) Insert(user *User) error {
+func (um UserModel) Insert(ctx context.Context, user *User) error {
 	query := `
 	INSERT INTO users (name, email, password_hash, created_at, role_id)
 	VALUES ($1, $2, $3, $4, (SELECT id FROM roles WHERE name='User'))
 	RETURNING id, (SELECT name FROM roles WHERE id=role_id) AS role_name;`
 
 	args := []any{user.Name, user.Email, user.Password.Hash, user.CreatedAt}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
 
 	err := um.DB.QueryRowContext(ctx, query, args...).Scan(&user.ID, &user.Role.Name)
 	if err != nil {
@@ -79,7 +76,7 @@ func (um UserModel) Insert(user *User) error {
 	return nil
 }
 
-func (um UserModel) GetUser(id int64) (*User, error) {
+func (um UserModel) GetUser(ctx context.Context, id int64) (*User, error) {
 	query := `
 	SELECT u.id, u.name, u.email, r.name, u.version
 	FROM users u
@@ -87,9 +84,6 @@ func (um UserModel) GetUser(id int64) (*User, error) {
 	WHERE u.id = $1;`
 
 	args := []any{id}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
 
 	user := &User{}
 	err := um.DB.QueryRowContext(ctx, query, args...).Scan(&user.ID, &user.Name, &user.Email, &user.Role.Name, &user.Version)
@@ -105,16 +99,13 @@ func (um UserModel) GetUser(id int64) (*User, error) {
 	return user, nil
 }
 
-func (um UserModel) GetUserByEmail(email string) (*User, error) {
+func (um UserModel) GetUserByEmail(ctx context.Context, email string) (*User, error) {
 	query := `
 	SELECT id, name, email, role_id, password_hash, version
 	FROM users
 	WHERE email = $1;`
 
 	args := []any{email}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
 
 	user := &User{}
 	err := um.DB.QueryRowContext(ctx, query, args...).Scan(&user.ID, &user.Name, &user.Email, &user.Role.ID, &user.Password.Hash, &user.Version)
@@ -130,7 +121,7 @@ func (um UserModel) GetUserByEmail(email string) (*User, error) {
 	return user, nil
 }
 
-func (um UserModel) GetUserByToken(token *Token) (*User, error) {
+func (um UserModel) GetUserByToken(ctx context.Context, token *Token) (*User, error) {
 	query := `
 	SELECT u.id, u.name, u.email, r.name, u.password_hash, u.version
 	FROM users u
@@ -141,9 +132,6 @@ func (um UserModel) GetUserByToken(token *Token) (*User, error) {
 		AND t.expires_at > $3;`
 
 	args := []any{token.Bytes, token.Scope, time.Now()}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
 
 	user := &User{}
 	err := um.DB.QueryRowContext(ctx, query, args...).Scan(&user.ID, &user.Name, &user.Email, &user.Role.Name, &user.Password.Hash, &user.Version)
@@ -159,16 +147,13 @@ func (um UserModel) GetUserByToken(token *Token) (*User, error) {
 	return user, nil
 }
 
-func (um UserModel) GetUserIDByToken(token *Token) (int64, error) {
+func (um UserModel) GetUserIDByToken(ctx context.Context, token *Token) (int64, error) {
 	query := `
 	SELECT user_id
 	FROM tokens
 	WHERE hash = $1 AND scope = $2 AND expires_at > $3`
 
 	args := []any{token.Bytes, token.Scope, time.Now()}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
 
 	var userID int64
 	err := um.DB.QueryRowContext(ctx, query, args...).Scan(&userID)
@@ -184,7 +169,7 @@ func (um UserModel) GetUserIDByToken(token *Token) (int64, error) {
 	return userID, nil
 }
 
-func (um UserModel) GetUserPermissionsByToken(token *Token) (int64, []string, error) {
+func (um UserModel) GetUserPermissionsByToken(ctx context.Context, token *Token) (int64, []string, error) {
 	query := `
 	SELECT DISTINCT u.id, p.code
 	FROM tokens t
@@ -195,9 +180,6 @@ func (um UserModel) GetUserPermissionsByToken(token *Token) (int64, []string, er
 	WHERE t.hash = $1 AND t.scope = $2 AND t.expires_at > $3`
 
 	args := []any{token.Bytes, token.Scope, time.Now()}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
 
 	rows, err := um.DB.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -228,7 +210,7 @@ func (um UserModel) GetUserPermissionsByToken(token *Token) (int64, []string, er
 	return userID, permissions, nil
 }
 
-func (um UserModel) UpdateUser(user *User) error {
+func (um UserModel) UpdateUser(ctx context.Context, user *User) error {
 	query := `
 	UPDATE users
 	SET name = $1, email = $2, password_hash = $3, version = version+1
@@ -236,9 +218,6 @@ func (um UserModel) UpdateUser(user *User) error {
 	RETURNING version`
 
 	args := []any{user.Name, user.Email, user.Password.Hash, user.ID, user.Version}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
 
 	err := um.DB.QueryRowContext(ctx, query, args...).Scan(&user.Version)
 	if err != nil {

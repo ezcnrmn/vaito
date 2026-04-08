@@ -3,51 +3,33 @@ package server
 import (
 	"context"
 	"errors"
-	"slices"
 	"time"
 
 	pb "github.com/ezcnrmn/vaito/gen/go/listing"
-	pbUser "github.com/ezcnrmn/vaito/gen/go/user"
 	"github.com/ezcnrmn/vaito/services/listing/internal/model"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-const permissionDeniedMsg = "you do not have permission to perform this action"
-
 func (s *Server) CreateListing(_ context.Context, req *pb.CreateListingRequest) (*pb.CreateListingResponse, error) {
-	token := req.Authentication.GetToken()
-
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	userPermissionResp, err := s.service.user.GetUserPermissionsByToken(ctx, &pbUser.GetUserPermissionsByTokenRequest{Token: &pbUser.Token{Token: token}})
+	token := req.Authentication.GetToken()
+	userID, err := s.validatePermission(ctx, token, "listing:create")
 	if err != nil {
-		if s, ok := status.FromError(err); ok {
-			code := s.Code()
-			msg := s.Message()
-			switch code {
-			case codes.Unauthenticated:
-				return nil, status.Error(codes.Unauthenticated, msg)
-			default:
-				return nil, status.Error(codes.Internal, err.Error())
-			}
-		}
-	}
-
-	if i := slices.Index(userPermissionResp.Permissions, "listing:create"); i == -1 {
-		return nil, status.Error(codes.PermissionDenied, permissionDeniedMsg)
+		return nil, err
 	}
 
 	listing := &model.Listing{
 		Title:       req.GetTitle(),
 		Description: req.GetDescription(),
 		Cetegory:    model.Category{ID: req.GetCategoryId()},
-		UserID:      userPermissionResp.GetUserId(),
+		UserID:      userID,
 		Price:       req.GetPrice(),
 	}
 
-	err = s.model.listing.Insert(listing)
+	err = s.model.listing.Insert(ctx, listing)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -58,40 +40,19 @@ func (s *Server) CreateListing(_ context.Context, req *pb.CreateListingRequest) 
 }
 
 func (s *Server) UpdateListing(_ context.Context, req *pb.UpdateListingRequest) (*pb.UpdateListingResponse, error) {
-	token := req.Authentication.GetToken()
-
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	userPermissionResp, err := s.service.user.GetUserPermissionsByToken(ctx, &pbUser.GetUserPermissionsByTokenRequest{Token: &pbUser.Token{Token: token}})
-	if err != nil {
-		if s, ok := status.FromError(err); ok {
-			code := s.Code()
-			msg := s.Message()
-			switch code {
-			case codes.Unauthenticated:
-				return nil, status.Error(codes.Unauthenticated, msg)
-			default:
-				return nil, status.Error(codes.Internal, err.Error())
-			}
-		}
-	}
 
-	if i := slices.Index(userPermissionResp.Permissions, "listing:edit"); i == -1 {
-		return nil, status.Error(codes.PermissionDenied, permissionDeniedMsg)
+	token := req.Authentication.GetToken()
+	userID, err := s.validatePermission(ctx, token, "listing:edit")
+	if err != nil {
+		return nil, err
 	}
 
 	id := req.GetId()
-	listing, err := s.model.listing.GetListing(id)
+	listing, err := s.getListing(ctx, id, userID)
 	if err != nil {
-		if errors.Is(err, model.ErrListingNotFound) {
-			return nil, status.Error(codes.NotFound, err.Error())
-		} else {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-	}
-
-	if listing.UserID != userPermissionResp.GetUserId() {
-		return nil, status.Error(codes.PermissionDenied, permissionDeniedMsg)
+		return nil, err
 	}
 
 	if req.Title != nil {
@@ -107,7 +68,7 @@ func (s *Server) UpdateListing(_ context.Context, req *pb.UpdateListingRequest) 
 		listing.Cetegory.ID = req.GetCategoryId()
 	}
 
-	err = s.model.listing.UpdateListing(listing)
+	err = s.model.listing.UpdateListing(ctx, listing)
 	if err != nil {
 		if errors.Is(err, model.ErrEditConflict) {
 			return nil, status.Error(codes.Aborted, err.Error())
@@ -122,30 +83,17 @@ func (s *Server) UpdateListing(_ context.Context, req *pb.UpdateListingRequest) 
 }
 
 func (s *Server) DeleteListing(_ context.Context, req *pb.DeleteListingRequest) (*pb.DeleteListingResponse, error) {
-	token := req.Authentication.GetToken()
-
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	userPermissionResp, err := s.service.user.GetUserPermissionsByToken(ctx, &pbUser.GetUserPermissionsByTokenRequest{Token: &pbUser.Token{Token: token}})
+
+	token := req.Authentication.GetToken()
+	userID, err := s.validatePermission(ctx, token, "listing:delete")
 	if err != nil {
-		if s, ok := status.FromError(err); ok {
-			code := s.Code()
-			msg := s.Message()
-			switch code {
-			case codes.Unauthenticated:
-				return nil, status.Error(codes.Unauthenticated, msg)
-			default:
-				return nil, status.Error(codes.Internal, err.Error())
-			}
-		}
+		return nil, err
 	}
 
-	if i := slices.Index(userPermissionResp.Permissions, "listing:delete"); i == -1 {
-		return nil, status.Error(codes.PermissionDenied, permissionDeniedMsg)
-	}
-
-	id, userID := req.GetId(), userPermissionResp.GetUserId()
-	err = s.model.listing.DeleteListing(id, userID)
+	id := req.GetId()
+	err = s.model.listing.DeleteListing(ctx, id, userID)
 	if err != nil {
 		if errors.Is(err, model.ErrListingNotFound) {
 			return nil, status.Error(codes.NotFound, err.Error())
@@ -158,9 +106,11 @@ func (s *Server) DeleteListing(_ context.Context, req *pb.DeleteListingRequest) 
 }
 
 func (s *Server) GetListing(_ context.Context, req *pb.GetListingRequest) (*pb.GetListingResponse, error) {
-	id := req.GetId()
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
-	listing, err := s.model.listing.GetListing(id)
+	id := req.GetId()
+	listing, err := s.model.listing.GetListing(ctx, id)
 	if err != nil {
 		if errors.Is(err, model.ErrListingNotFound) {
 			return nil, status.Error(codes.NotFound, err.Error())
@@ -187,19 +137,94 @@ func (s *Server) GetListingsByUser(_ context.Context, req *pb.GetListingsByUserR
 }
 
 func (s *Server) SendListingToModeration(_ context.Context, req *pb.SendListingToModerationRequest) (*pb.SendListingToModerationResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	token := req.Authentication.GetToken()
+	userID, err := s.validatePermission(ctx, token, "listing:edit")
+	if err != nil {
+		return nil, err
+	}
+
+	id := req.GetId()
+	listing, err := s.getListing(ctx, id, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if listing.Status != "Draft" {
+		return nil, status.Error(codes.InvalidArgument, "you can only send listings with 'Draft' status for moderation")
+	}
+
+	err = s.updateListingStatus(ctx, listing, "Moderation")
+	if err != nil {
+		return nil, err
+	}
+
 	return &pb.SendListingToModerationResponse{}, nil
 }
 
 func (s *Server) ActivateListing(_ context.Context, req *pb.ActivateListingRequest) (*pb.ActivateListingResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	token := req.Authentication.GetToken()
+	userID, err := s.validatePermission(ctx, token, "listing:edit")
+	if err != nil {
+		return nil, err
+	}
+
+	id := req.GetId()
+	listing, err := s.getListing(ctx, id, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if listing.Status != "Inactive" {
+		return nil, status.Error(codes.InvalidArgument, "you can only activate listings with 'Inactive' status")
+	}
+
+	err = s.updateListingStatus(ctx, listing, "Active")
+	if err != nil {
+		return nil, err
+	}
+
 	return &pb.ActivateListingResponse{}, nil
 }
 
 func (s *Server) DeactivateListing(_ context.Context, req *pb.DeactivateListingRequest) (*pb.DeactivateListingResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	token := req.Authentication.GetToken()
+	userID, err := s.validatePermission(ctx, token, "listing:edit")
+	if err != nil {
+		return nil, err
+	}
+
+	id := req.GetId()
+	listing, err := s.getListing(ctx, id, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if listing.Status != "Active" {
+		return nil, status.Error(codes.InvalidArgument, "you can only deactivate listings with 'Active' status")
+	}
+
+	err = s.updateListingStatus(ctx, listing, "Inactive")
+	if err != nil {
+		return nil, err
+	}
+
 	return &pb.DeactivateListingResponse{}, nil
 }
 
 func (s *Server) GetCategories(_ context.Context, req *pb.GetCategoriesRequest) (*pb.GetCategoriesResponse, error) {
-	categories, err := s.model.listing.GetCategories()
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	categories, err := s.model.listing.GetCategories(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "unable to get categories")
 	}

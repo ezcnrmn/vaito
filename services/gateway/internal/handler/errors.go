@@ -42,7 +42,7 @@ func sendUnauthorizedError(w http.ResponseWriter) {
 }
 
 func sendForbiddenError(w http.ResponseWriter) {
-	msg := "you don't have the necessary permissions to access this resource"
+	msg := "you don't have the necessary permissions to access this resource or to perform this action"
 	sendError(w, http.StatusForbidden, msg)
 }
 

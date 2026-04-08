@@ -207,11 +207,137 @@ func (h *Handler) DeleteListing(w http.ResponseWriter, r *http.Request) {
 	sendSuccessMessage(w, "listing successfully deleted")
 }
 
-func (h *Handler) SendListingToModeration(w http.ResponseWriter, r *http.Request) {}
+func (h *Handler) SendListingToModeration(w http.ResponseWriter, r *http.Request) {
+	token := contextutil.GetToken(r)
+	if token == "" {
+		sendMissingTokenError(w)
+		return
+	}
 
-func (h *Handler) ActivateListing(w http.ResponseWriter, r *http.Request) {}
+	id, err := readIDParam(r)
+	if err != nil {
+		sendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
 
-func (h *Handler) DeactivateListing(w http.ResponseWriter, r *http.Request) {}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err = h.listingConn.SendListingToModeration(ctx, &pbListing.SendListingToModerationRequest{
+		Id: id,
+		Authentication: &pbListing.Authentication{
+			Token: token,
+		},
+	})
+	if err != nil {
+		h.handleGRPCError(w, err, func(code codes.Code, msg string) {
+			switch code {
+			case codes.Unauthenticated:
+				sendUnauthorizedError(w)
+			case codes.PermissionDenied:
+				sendForbiddenError(w)
+			case codes.NotFound:
+				sendError(w, http.StatusNotFound, msg)
+			case codes.InvalidArgument:
+				sendError(w, http.StatusBadRequest, msg)
+			default:
+				h.log.Error(msg, "code", code)
+				sendInternalError(w)
+			}
+		})
+		return
+	}
+
+	sendSuccessMessage(w, "listing successfully sent to moderation")
+}
+
+func (h *Handler) ActivateListing(w http.ResponseWriter, r *http.Request) {
+	token := contextutil.GetToken(r)
+	if token == "" {
+		sendMissingTokenError(w)
+		return
+	}
+
+	id, err := readIDParam(r)
+	if err != nil {
+		sendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err = h.listingConn.ActivateListing(ctx, &pbListing.ActivateListingRequest{
+		Id: id,
+		Authentication: &pbListing.Authentication{
+			Token: token,
+		},
+	})
+	if err != nil {
+		h.handleGRPCError(w, err, func(code codes.Code, msg string) {
+			switch code {
+			case codes.Unauthenticated:
+				sendUnauthorizedError(w)
+			case codes.PermissionDenied:
+				sendForbiddenError(w)
+			case codes.NotFound:
+				sendError(w, http.StatusNotFound, msg)
+			case codes.InvalidArgument:
+				sendError(w, http.StatusBadRequest, msg)
+			default:
+				h.log.Error(msg, "code", code)
+				sendInternalError(w)
+			}
+		})
+		return
+	}
+
+	sendSuccessMessage(w, "listing successfully activated")
+}
+
+func (h *Handler) DeactivateListing(w http.ResponseWriter, r *http.Request) {
+	token := contextutil.GetToken(r)
+	if token == "" {
+		sendMissingTokenError(w)
+		return
+	}
+
+	id, err := readIDParam(r)
+	if err != nil {
+		sendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err = h.listingConn.DeactivateListing(ctx, &pbListing.DeactivateListingRequest{
+		Id: id,
+		Authentication: &pbListing.Authentication{
+			Token: token,
+		},
+	})
+	if err != nil {
+		h.handleGRPCError(w, err, func(code codes.Code, msg string) {
+			switch code {
+			case codes.Unauthenticated:
+				sendUnauthorizedError(w)
+			case codes.PermissionDenied:
+				sendForbiddenError(w)
+			case codes.NotFound:
+				sendError(w, http.StatusNotFound, msg)
+			case codes.InvalidArgument:
+				sendError(w, http.StatusBadRequest, msg)
+			default:
+				h.log.Error(msg, "code", code)
+				sendInternalError(w)
+			}
+		})
+		return
+	}
+
+	sendSuccessMessage(w, "listing successfully deactivated")
+}
 
 func (h *Handler) GetListings(w http.ResponseWriter, r *http.Request) {}
 

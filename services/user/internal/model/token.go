@@ -54,15 +54,12 @@ type TokenModel struct {
 	DB *sql.DB
 }
 
-func (tm TokenModel) Insert(token *Token) error {
+func (tm TokenModel) Insert(ctx context.Context, token *Token) error {
 	query := `
 	INSERT INTO tokens (hash, user_id, scope, expires_at)
 	VALUES ($1, $2, $3, $4);`
 
 	args := []any{token.Bytes, token.UserID, token.Scope, token.ExpiresAt}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
 
 	_, err := tm.DB.ExecContext(ctx, query, args...)
 	return err

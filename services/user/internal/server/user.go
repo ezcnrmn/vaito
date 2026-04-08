@@ -12,6 +12,9 @@ import (
 )
 
 func (s *Server) CreateUser(_ context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
 	user := model.User{
 		Name:      req.GetName(),
 		Email:     req.GetEmail(),
@@ -24,7 +27,7 @@ func (s *Server) CreateUser(_ context.Context, req *pb.CreateUserRequest) (*pb.C
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	err = s.model.user.Insert(&user)
+	err = s.model.user.Insert(ctx, &user)
 	if err != nil {
 		if errors.Is(err, model.ErrDuplicateEmail) {
 			return nil, status.Error(codes.AlreadyExists, err.Error())
@@ -41,6 +44,9 @@ func (s *Server) CreateUser(_ context.Context, req *pb.CreateUserRequest) (*pb.C
 const invalidTokenMsg = "invalid token"
 
 func (s *Server) UpdateUser(_ context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	token := &model.Token{
 		Scope: model.ScopeAuthentication,
 		Text:  req.Token.GetToken(),
@@ -50,7 +56,7 @@ func (s *Server) UpdateUser(_ context.Context, req *pb.UpdateUserRequest) (*pb.U
 		return nil, status.Error(codes.Unauthenticated, invalidTokenMsg)
 	}
 
-	user, err := s.model.user.GetUserByToken(token)
+	user, err := s.model.user.GetUserByToken(ctx, token)
 	if err != nil {
 		if errors.Is(err, model.ErrUserNotFound) {
 			return nil, status.Error(codes.NotFound, err.Error())
@@ -71,7 +77,7 @@ func (s *Server) UpdateUser(_ context.Context, req *pb.UpdateUserRequest) (*pb.U
 		user.Name = req.GetName()
 	}
 
-	err = s.model.user.UpdateUser(user)
+	err = s.model.user.UpdateUser(ctx, user)
 	if err != nil {
 		if errors.Is(err, model.ErrEditConflict) {
 			return nil, status.Error(codes.Aborted, err.Error())
@@ -86,6 +92,9 @@ func (s *Server) UpdateUser(_ context.Context, req *pb.UpdateUserRequest) (*pb.U
 }
 
 func (s *Server) UpdateUserPassword(_ context.Context, req *pb.UpdateUserPasswordRequest) (*pb.UpdateUserPasswordResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	token := &model.Token{
 		Scope: model.ScopeAuthentication,
 		Text:  req.Token.GetToken(),
@@ -95,7 +104,7 @@ func (s *Server) UpdateUserPassword(_ context.Context, req *pb.UpdateUserPasswor
 		return nil, status.Error(codes.Unauthenticated, invalidTokenMsg)
 	}
 
-	user, err := s.model.user.GetUserByToken(token)
+	user, err := s.model.user.GetUserByToken(ctx, token)
 	if err != nil {
 		if errors.Is(err, model.ErrUserNotFound) {
 			return nil, status.Error(codes.NotFound, err.Error())
@@ -115,7 +124,7 @@ func (s *Server) UpdateUserPassword(_ context.Context, req *pb.UpdateUserPasswor
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	err = s.model.user.UpdateUser(user)
+	err = s.model.user.UpdateUser(ctx, user)
 	if err != nil {
 		if errors.Is(err, model.ErrEditConflict) {
 			return nil, status.Error(codes.Aborted, err.Error())
@@ -128,9 +137,12 @@ func (s *Server) UpdateUserPassword(_ context.Context, req *pb.UpdateUserPasswor
 }
 
 func (s *Server) GetUser(_ context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
 	id := req.GetId()
 
-	user, err := s.model.user.GetUser(id)
+	user, err := s.model.user.GetUser(ctx, id)
 	if err != nil {
 		if errors.Is(err, model.ErrUserNotFound) {
 			return nil, status.Error(codes.NotFound, err.Error())
@@ -145,6 +157,9 @@ func (s *Server) GetUser(_ context.Context, req *pb.GetUserRequest) (*pb.GetUser
 }
 
 func (s *Server) GetUserIDByToken(_ context.Context, req *pb.GetUserIDByTokenRequest) (*pb.GetUserIDByTokenResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
 	token := &model.Token{
 		Scope: model.ScopeAuthentication,
 		Text:  req.Token.GetToken(),
@@ -154,7 +169,7 @@ func (s *Server) GetUserIDByToken(_ context.Context, req *pb.GetUserIDByTokenReq
 		return nil, status.Error(codes.Unauthenticated, invalidTokenMsg)
 	}
 
-	userID, err := s.model.user.GetUserIDByToken(token)
+	userID, err := s.model.user.GetUserIDByToken(ctx, token)
 	if err != nil {
 		if errors.Is(err, model.ErrUserNotFound) {
 			return nil, status.Error(codes.Unauthenticated, invalidTokenMsg)
@@ -169,6 +184,9 @@ func (s *Server) GetUserIDByToken(_ context.Context, req *pb.GetUserIDByTokenReq
 }
 
 func (s *Server) GetUserPermissionsByToken(_ context.Context, req *pb.GetUserPermissionsByTokenRequest) (*pb.GetUserPermissionsByTokenResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
 	token := &model.Token{
 		Scope: model.ScopeAuthentication,
 		Text:  req.Token.GetToken(),
@@ -178,7 +196,7 @@ func (s *Server) GetUserPermissionsByToken(_ context.Context, req *pb.GetUserPer
 		return nil, status.Error(codes.Unauthenticated, invalidTokenMsg)
 	}
 
-	userID, permissions, err := s.model.user.GetUserPermissionsByToken(token)
+	userID, permissions, err := s.model.user.GetUserPermissionsByToken(ctx, token)
 	if err != nil {
 		if errors.Is(err, model.ErrUserNotFound) {
 			return nil, status.Error(codes.Unauthenticated, invalidTokenMsg)
