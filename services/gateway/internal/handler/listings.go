@@ -469,6 +469,8 @@ func (h *Handler) GetUserListing(w http.ResponseWriter, r *http.Request) {
 			switch code {
 			case codes.NotFound:
 				sendError(w, http.StatusNotFound, msg)
+			case codes.PermissionDenied:
+				sendForbiddenError(w)
 			default:
 				h.log.Error(msg, "code", code)
 				sendInternalError(w)
