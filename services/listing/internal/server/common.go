@@ -11,6 +11,27 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+func (s *Server) validateToken(ctx context.Context, token string) (userID int64, err error) {
+	userResp, err := s.service.user.GetUserIDByToken(
+		ctx,
+		&pbUser.GetUserIDByTokenRequest{Token: &pbUser.Token{Token: token}},
+	)
+	if err != nil {
+		if s, ok := status.FromError(err); ok {
+			code := s.Code()
+			msg := s.Message()
+			switch code {
+			case codes.Unauthenticated:
+				return 0, status.Error(codes.Unauthenticated, msg)
+			default:
+				return 0, status.Error(codes.Internal, err.Error())
+			}
+		}
+	}
+
+	return userResp.GetUserId(), nil
+}
+
 const permissionDeniedMsg = "you do not have permission to perform this action"
 
 func (s *Server) validatePermission(ctx context.Context, token, permission string) (userID int64, err error) {
@@ -39,7 +60,7 @@ func (s *Server) validatePermission(ctx context.Context, token, permission strin
 }
 
 func (s *Server) getListing(ctx context.Context, id, userID int64) (*model.Listing, error) {
-	listing, err := s.model.listing.GetListing(ctx, id)
+	listing, err := s.model.listing.GetListing(ctx, id, nil, nil)
 	if err != nil {
 		if errors.Is(err, model.ErrListingNotFound) {
 			return nil, status.Error(codes.NotFound, err.Error())

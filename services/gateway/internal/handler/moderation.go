@@ -10,7 +10,48 @@ import (
 	"google.golang.org/grpc/codes"
 )
 
-func (h *Handler) ModerationListings(w http.ResponseWriter, r *http.Request) {}
+func (h *Handler) ModerationListings(w http.ResponseWriter, r *http.Request) {
+	token := contextutil.GetToken(r)
+	if token == "" {
+		sendMissingTokenError(w)
+		return
+	}
+
+	page, size, err := readPaginationParams(r)
+	if err != nil {
+		sendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	resp, err := h.listingConn.GetModerationListings(ctx, &pbListing.GetModerationListingsRequest{
+		Pagination: &pbListing.PaginationRequest{
+			Page: page,
+			Size: size,
+		},
+		Authentication: &pbListing.Authentication{
+			Token: token,
+		},
+	})
+	if err != nil {
+		h.handleGRPCError(w, err, func(code codes.Code, msg string) {
+			switch code {
+			case codes.Unauthenticated:
+				sendUnauthorizedError(w)
+			case codes.PermissionDenied:
+				sendForbiddenError(w)
+			default:
+				h.log.Error(msg, "code", code)
+				sendInternalError(w)
+			}
+		})
+		return
+	}
+
+	writePaginatedListingResponse(w, resp.Items, resp.Pagination)
+}
 
 func (h *Handler) ModerationActivateListing(w http.ResponseWriter, r *http.Request) {
 	token := contextutil.GetToken(r)

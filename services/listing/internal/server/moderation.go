@@ -12,7 +12,43 @@ import (
 )
 
 func (s *Server) GetModerationListings(_ context.Context, req *pb.GetModerationListingsRequest) (*pb.GetModerationListingsResponse, error) {
-	return &pb.GetModerationListingsResponse{}, nil
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	token := req.Authentication.GetToken()
+	_, err := s.validatePermission(ctx, token, "listing:moderate")
+	if err != nil {
+		return nil, err
+	}
+
+	statusName := "Moderation"
+	pagination := model.Pagination{
+		Page:          req.GetPagination().GetPage(),
+		Size:          req.GetPagination().GetSize(),
+		Sort:          "created_at",
+		SortDirection: "DESC",
+		Filter: struct {
+			Status *string
+			UserID *int64
+		}{
+			Status: &statusName,
+		},
+	}
+
+	listings, err := s.model.listing.GetListings(ctx, &pagination)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	pbListings := make([]*pb.Listing, 0, len(listings))
+	for _, l := range listings {
+		pbListings = append(pbListings, listingToProtobufListing(&l))
+	}
+
+	return &pb.GetModerationListingsResponse{
+		Items:      pbListings,
+		Pagination: paginationToProtobufPagination(&pagination),
+	}, nil
 }
 
 func (s *Server) ActivateListingByModeration(_ context.Context, req *pb.ActivateListingByModerationRequest) (*pb.ActivateListingByModerationResponse, error) {
@@ -26,7 +62,7 @@ func (s *Server) ActivateListingByModeration(_ context.Context, req *pb.Activate
 	}
 
 	id := req.GetId()
-	listing, err := s.model.listing.GetListing(ctx, id)
+	listing, err := s.model.listing.GetListing(ctx, id, nil, nil)
 	if err != nil {
 		if errors.Is(err, model.ErrListingNotFound) {
 			return nil, status.Error(codes.NotFound, err.Error())
@@ -58,7 +94,7 @@ func (s *Server) DeactivateListingByModeration(_ context.Context, req *pb.Deacti
 	}
 
 	id := req.GetId()
-	listing, err := s.model.listing.GetListing(ctx, id)
+	listing, err := s.model.listing.GetListing(ctx, id, nil, nil)
 	if err != nil {
 		if errors.Is(err, model.ErrListingNotFound) {
 			return nil, status.Error(codes.NotFound, err.Error())

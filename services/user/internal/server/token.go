@@ -43,5 +43,5 @@ func (s *Server) AuthenticateUser(_ context.Context, req *pb.AuthenticateUserReq
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &pb.AuthenticateUserResponse{Token: &pb.Token{Token: token.Text}}, nil
+	return &pb.AuthenticateUserResponse{Token: &pb.Token{Token: token.Text}, UserId: user.ID}, nil
 }

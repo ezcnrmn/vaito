@@ -766,6 +766,7 @@ type GetUserListingRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	Authentication *Authentication        `protobuf:"bytes,1,opt,name=authentication,proto3" json:"authentication,omitempty"`
 	Id             int64                  `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+	UserId         int64                  `protobuf:"varint,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -810,6 +811,13 @@ func (x *GetUserListingRequest) GetAuthentication() *Authentication {
 func (x *GetUserListingRequest) GetId() int64 {
 	if x != nil {
 		return x.Id
+	}
+	return 0
+}
+
+func (x *GetUserListingRequest) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
 	}
 	return 0
 }
@@ -1750,10 +1758,11 @@ const file_listing_proto_rawDesc = "" +
 	"\x11GetListingRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"C\n" +
 	"\x12GetListingResponse\x12-\n" +
-	"\alisting\x18\x01 \x01(\v2\x13.listing.v1.ListingR\alisting\"k\n" +
+	"\alisting\x18\x01 \x01(\v2\x13.listing.v1.ListingR\alisting\"\x84\x01\n" +
 	"\x15GetUserListingRequest\x12B\n" +
 	"\x0eauthentication\x18\x01 \x01(\v2\x1a.listing.v1.AuthenticationR\x0eauthentication\x12\x0e\n" +
-	"\x02id\x18\x02 \x01(\x03R\x02id\"G\n" +
+	"\x02id\x18\x02 \x01(\x03R\x02id\x12\x17\n" +
+	"\auser_id\x18\x03 \x01(\x03R\x06userId\"G\n" +
 	"\x16GetUserListingResponse\x12-\n" +
 	"\alisting\x18\x01 \x01(\v2\x13.listing.v1.ListingR\alisting\"Y\n" +
 	"\x18GetActiveListingsRequest\x12=\n" +

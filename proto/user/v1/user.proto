@@ -67,6 +67,7 @@ message AuthenticateUserRequest {
 }
 message AuthenticateUserResponse {
   Token token = 1;
+  int64 user_id = 2;
 }
 
 message GetUserIDByTokenRequest {

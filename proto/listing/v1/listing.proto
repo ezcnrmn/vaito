@@ -101,6 +101,7 @@ message GetListingResponse {
 message GetUserListingRequest {
   Authentication authentication = 1;
   int64 id = 2;
+  int64 user_id = 3;
 }
 message GetUserListingResponse {
   Listing listing = 1;

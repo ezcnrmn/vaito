@@ -61,7 +61,7 @@ func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := readIDParam(r)
+	id, err := readUserIDParam(r)
 	if err != nil {
 		sendError(w, http.StatusBadRequest, err.Error())
 		return
@@ -129,7 +129,7 @@ func (h *Handler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := readIDParam(r)
+	id, err := readUserIDParam(r)
 	if err != nil {
 		sendError(w, http.StatusBadRequest, err.Error())
 		return
@@ -184,7 +184,7 @@ func (h *Handler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
-	id, err := readIDParam(r)
+	id, err := readUserIDParam(r)
 	if err != nil {
 		sendError(w, http.StatusBadRequest, err.Error())
 		return
@@ -248,5 +248,5 @@ func (h *Handler) AuthenticateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonutil.WriteJSON(w, http.StatusOK, jsonutil.Envelope{"token": resp.GetToken().GetToken()})
+	jsonutil.WriteJSON(w, http.StatusOK, jsonutil.Envelope{"token": resp.GetToken().GetToken(), "userID": resp.GetUserId()})
 }

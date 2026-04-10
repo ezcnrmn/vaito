@@ -588,6 +588,7 @@ func (x *AuthenticateUserRequest) GetPassword() string {
 type AuthenticateUserResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Token         *Token                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	UserId        int64                  `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -627,6 +628,13 @@ func (x *AuthenticateUserResponse) GetToken() *Token {
 		return x.Token
 	}
 	return nil
+}
+
+func (x *AuthenticateUserResponse) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
 }
 
 type GetUserIDByTokenRequest struct {
@@ -852,9 +860,10 @@ const file_user_proto_rawDesc = "" +
 	"\x04user\x18\x01 \x01(\v2\r.user.v1.UserR\x04user\"K\n" +
 	"\x17AuthenticateUserRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"@\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"Y\n" +
 	"\x18AuthenticateUserResponse\x12$\n" +
-	"\x05token\x18\x01 \x01(\v2\x0e.user.v1.TokenR\x05token\"?\n" +
+	"\x05token\x18\x01 \x01(\v2\x0e.user.v1.TokenR\x05token\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\x03R\x06userId\"?\n" +
 	"\x17GetUserIDByTokenRequest\x12$\n" +
 	"\x05token\x18\x01 \x01(\v2\x0e.user.v1.TokenR\x05token\"3\n" +
 	"\x18GetUserIDByTokenResponse\x12\x17\n" +

@@ -22,12 +22,13 @@ func (a *App) routes() http.Handler {
 	routes.HandlerFunc(http.MethodGet, apiV1+"/healthcheck", handler.Healthcheck)
 
 	routes.HandlerFunc(http.MethodPost, apiV1+"/users", handler.CreateUser)
-	routes.HandlerFunc(http.MethodPatch, apiV1+"/users/:id", handler.UpdateUser)
-	routes.HandlerFunc(http.MethodPut, apiV1+"/users/:id/update-password", handler.UpdateUserPassword)
-	routes.HandlerFunc(http.MethodGet, apiV1+"/users/:id", handler.GetUser)
+	routes.HandlerFunc(http.MethodPatch, apiV1+"/users/:userID", handler.UpdateUser)
+	routes.HandlerFunc(http.MethodPut, apiV1+"/users/:userID/update-password", handler.UpdateUserPassword)
+	routes.HandlerFunc(http.MethodGet, apiV1+"/users/:userID", handler.GetUser)
 	routes.HandlerFunc(http.MethodPost, apiV1+"/login", handler.AuthenticateUser)
 
-	routes.HandlerFunc(http.MethodGet, apiV1+"/users/:id/listings", handler.GetUserListings)
+	routes.HandlerFunc(http.MethodGet, apiV1+"/users/:userID/listings", handler.GetUserListings)
+	routes.HandlerFunc(http.MethodGet, apiV1+"/users/:userID/listings/:id", handler.GetUserListing)
 
 	routes.HandlerFunc(http.MethodPost, apiV1+"/listings", handler.CreateListing)
 	routes.HandlerFunc(http.MethodPatch, apiV1+"/listings/:id", handler.UpdateListing)
@@ -40,7 +41,7 @@ func (a *App) routes() http.Handler {
 	routes.HandlerFunc(http.MethodGet, apiV1+"/listings", handler.GetListings)
 	routes.HandlerFunc(http.MethodGet, apiV1+"/categories", handler.GetListingCategories)
 
-	routes.HandlerFunc(http.MethodPost, apiV1+"/moderation/listings", handler.ModerationListings)
+	routes.HandlerFunc(http.MethodGet, apiV1+"/moderation/listings", handler.ModerationListings)
 	routes.HandlerFunc(http.MethodPost, apiV1+"/moderation/listings/:id/activate", handler.ModerationActivateListing)
 	routes.HandlerFunc(http.MethodPost, apiV1+"/moderation/listings/:id/deactivate", handler.ModerationDeactivateListing)
 

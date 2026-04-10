@@ -339,7 +339,35 @@ func (h *Handler) DeactivateListing(w http.ResponseWriter, r *http.Request) {
 	sendSuccessMessage(w, "listing successfully deactivated")
 }
 
-func (h *Handler) GetListings(w http.ResponseWriter, r *http.Request) {}
+func (h *Handler) GetListings(w http.ResponseWriter, r *http.Request) {
+	page, size, err := readPaginationParams(r)
+	if err != nil {
+		sendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	resp, err := h.listingConn.GetActiveListings(ctx, &pbListing.GetActiveListingsRequest{
+		Pagination: &pbListing.PaginationRequest{
+			Page: page,
+			Size: size,
+		},
+	})
+	if err != nil {
+		h.handleGRPCError(w, err, func(code codes.Code, msg string) {
+			switch code {
+			default:
+				h.log.Error(msg, "code", code)
+				sendInternalError(w)
+			}
+		})
+		return
+	}
+
+	writePaginatedListingResponse(w, resp.Items, resp.Pagination)
+}
 
 func (h *Handler) GetListingCategories(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -361,4 +389,93 @@ func (h *Handler) GetListingCategories(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetUserListings(w http.ResponseWriter, r *http.Request) {
+	token := contextutil.GetToken(r)
+	if token == "" {
+		sendMissingTokenError(w)
+		return
+	}
+
+	userID, err := readUserIDParam(r)
+	if err != nil {
+		sendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	page, size, err := readPaginationParams(r)
+	if err != nil {
+		sendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	resp, err := h.listingConn.GetListingsByUser(ctx, &pbListing.GetListingsByUserRequest{
+		Pagination: &pbListing.PaginationRequest{
+			Page: page,
+			Size: size,
+		},
+		Authentication: &pbListing.Authentication{
+			Token: token,
+		},
+		UserId: userID,
+	})
+	if err != nil {
+		h.handleGRPCError(w, err, func(code codes.Code, msg string) {
+			switch code {
+			case codes.Unauthenticated:
+				sendUnauthorizedError(w)
+			case codes.PermissionDenied:
+				sendForbiddenError(w)
+			default:
+				h.log.Error(msg, "code", code)
+				sendInternalError(w)
+			}
+		})
+		return
+	}
+
+	writePaginatedListingResponse(w, resp.Items, resp.Pagination)
+}
+
+func (h *Handler) GetUserListing(w http.ResponseWriter, r *http.Request) {
+	token := contextutil.GetToken(r)
+	if token == "" {
+		sendMissingTokenError(w)
+		return
+	}
+
+	userID, err := readUserIDParam(r)
+	if err != nil {
+		sendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	id, err := readIDParam(r)
+	if err != nil {
+		sendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	resp, err := h.listingConn.GetUserListing(
+		ctx,
+		&pbListing.GetUserListingRequest{Id: id, UserId: userID, Authentication: &pbListing.Authentication{Token: token}},
+	)
+	if err != nil {
+		h.handleGRPCError(w, err, func(code codes.Code, msg string) {
+			switch code {
+			case codes.NotFound:
+				sendError(w, http.StatusNotFound, msg)
+			default:
+				h.log.Error(msg, "code", code)
+				sendInternalError(w)
+			}
+		})
+		return
+	}
+
+	writeListingResponse(w, resp.GetListing())
 }

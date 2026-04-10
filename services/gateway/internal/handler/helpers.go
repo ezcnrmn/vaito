@@ -25,6 +25,48 @@ func readIDParam(r *http.Request) (int64, error) {
 	return id, nil
 }
 
+func readUserIDParam(r *http.Request) (int64, error) {
+	params := httprouter.ParamsFromContext(r.Context())
+
+	id, err := strconv.ParseInt(params.ByName("userID"), 10, 64)
+	if err != nil || id < 1 {
+		return 0, errors.New("invalid id parameter")
+	}
+
+	return id, nil
+}
+
+func readPaginationParams(r *http.Request) (page, size int32, err error) {
+	pageParam, sizeParam := r.URL.Query().Get("page"), r.URL.Query().Get("size")
+	if pageParam == "" {
+		page = 1
+	} else {
+		parsed, err := strconv.ParseInt(pageParam, 10, 32)
+		if err != nil {
+			return 0, 0, errors.New("invalid page parameter")
+		}
+		page = int32(parsed)
+		if page < 1 {
+			return 0, 0, errors.New("invalid page parameter")
+		}
+	}
+
+	if sizeParam == "" {
+		size = 20
+	} else {
+		parsed, err := strconv.ParseInt(sizeParam, 10, 32)
+		if err != nil {
+			return 0, 0, errors.New("invalid size parameter")
+		}
+		size = int32(parsed)
+		if size < 1 || size > 100 {
+			return 0, 0, errors.New("invalid size parameter")
+		}
+	}
+
+	return page, size, nil
+}
+
 func (h *Handler) handleGRPCError(w http.ResponseWriter, err error, handler func(code codes.Code, msg string)) {
 	if s, ok := status.FromError(err); ok {
 		code := s.Code()
@@ -82,6 +124,12 @@ type listing struct {
 	PublishedAt  *time.Time `json:"published_at"`
 }
 
+type pagination struct {
+	Page  int32 `json:"page"`
+	Size  int32 `json:"size"`
+	Total int32 `json:"total"`
+}
+
 func writeListingResponse(w http.ResponseWriter, listingResponse *pbListing.Listing) {
 	listing := listing{
 		ID:           listingResponse.GetId(),
@@ -103,6 +151,40 @@ func writeListingResponse(w http.ResponseWriter, listingResponse *pbListing.List
 	}
 
 	jsonutil.WriteJSON(w, http.StatusOK, jsonutil.Envelope{"listing": listing})
+}
+
+func writePaginatedListingResponse(w http.ResponseWriter, listingsResponse []*pbListing.Listing, paginationResponse *pbListing.PaginationResponse) {
+	listings := make([]listing, 0, len(listingsResponse))
+	for _, l := range listingsResponse {
+		listing := listing{
+			ID:           l.GetId(),
+			Title:        l.GetTitle(),
+			Description:  l.GetDescription(),
+			CategoryID:   l.Category.GetId(),
+			CategoryName: l.Category.GetName(),
+			UserID:       l.GetUserId(),
+			Status:       l.GetStatus(),
+			Price:        l.GetPrice(),
+		}
+		if l.CreatedAt != nil {
+			t := l.GetCreatedAt().AsTime()
+			listing.CreatedAt = &t
+		}
+		if l.PublishedAt != nil {
+			t := l.GetPublishedAt().AsTime()
+			listing.PublishedAt = &t
+		}
+		listings = append(listings, listing)
+	}
+
+	jsonutil.WriteJSON(w, http.StatusOK, jsonutil.Envelope{
+		"items": listings,
+		"pagination": pagination{
+			Page:  paginationResponse.GetPage(),
+			Size:  paginationResponse.GetSize(),
+			Total: paginationResponse.GetTotal(),
+		},
+	})
 }
 
 func sendSuccessMessage(w http.ResponseWriter, message string) {

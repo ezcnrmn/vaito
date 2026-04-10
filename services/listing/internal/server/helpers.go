@@ -22,3 +22,13 @@ func listingToProtobufListing(listing *model.Listing) *pb.Listing {
 	}
 	return pbListing
 }
+
+func paginationToProtobufPagination(pagination *model.Pagination) *pb.PaginationResponse {
+	pbPagination := &pb.PaginationResponse{
+		Page:  pagination.Page,
+		Size:  pagination.Size,
+		Total: pagination.Total,
+	}
+
+	return pbPagination
+}

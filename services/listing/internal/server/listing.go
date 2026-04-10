@@ -109,8 +109,8 @@ func (s *Server) GetListing(_ context.Context, req *pb.GetListingRequest) (*pb.G
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	id := req.GetId()
-	listing, err := s.model.listing.GetListing(ctx, id)
+	id, statusName := req.GetId(), "Active"
+	listing, err := s.model.listing.GetListing(ctx, id, nil, &statusName)
 	if err != nil {
 		if errors.Is(err, model.ErrListingNotFound) {
 			return nil, status.Error(codes.NotFound, err.Error())
@@ -125,15 +125,111 @@ func (s *Server) GetListing(_ context.Context, req *pb.GetListingRequest) (*pb.G
 }
 
 func (s *Server) GetUserListing(_ context.Context, req *pb.GetUserListingRequest) (*pb.GetUserListingResponse, error) {
-	return &pb.GetUserListingResponse{}, nil
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	token := req.Authentication.GetToken()
+	userID, err := s.validateToken(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	requestedUserID := req.GetUserId()
+	if userID != requestedUserID {
+		return nil, status.Error(codes.PermissionDenied, permissionDeniedMsg)
+	}
+
+	id := req.GetId()
+	listing, err := s.model.listing.GetListing(ctx, id, &userID, nil)
+	if err != nil {
+		if errors.Is(err, model.ErrListingNotFound) {
+			return nil, status.Error(codes.NotFound, err.Error())
+		} else {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	return &pb.GetUserListingResponse{
+		Listing: listingToProtobufListing(listing),
+	}, nil
 }
 
 func (s *Server) GetActiveListings(_ context.Context, req *pb.GetActiveListingsRequest) (*pb.GetActiveListingsResponse, error) {
-	return &pb.GetActiveListingsResponse{}, nil
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	statusName := "Active"
+	pagination := model.Pagination{
+		Page:          req.GetPagination().GetPage(),
+		Size:          req.GetPagination().GetSize(),
+		Sort:          "published_at",
+		SortDirection: "DESC",
+		Filter: struct {
+			Status *string
+			UserID *int64
+		}{
+			Status: &statusName,
+		},
+	}
+
+	listings, err := s.model.listing.GetListings(ctx, &pagination)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	pbListings := make([]*pb.Listing, 0, len(listings))
+	for _, l := range listings {
+		pbListings = append(pbListings, listingToProtobufListing(&l))
+	}
+
+	return &pb.GetActiveListingsResponse{
+		Items:      pbListings,
+		Pagination: paginationToProtobufPagination(&pagination),
+	}, nil
 }
 
 func (s *Server) GetListingsByUser(_ context.Context, req *pb.GetListingsByUserRequest) (*pb.GetListingsByUserResponse, error) {
-	return &pb.GetListingsByUserResponse{}, nil
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	token := req.Authentication.GetToken()
+	userID, err := s.validateToken(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	reqUserID := req.GetUserId()
+	if reqUserID != userID {
+		return nil, status.Error(codes.PermissionDenied, permissionDeniedMsg)
+	}
+
+	pagination := model.Pagination{
+		Page:          req.GetPagination().GetPage(),
+		Size:          req.GetPagination().GetSize(),
+		Sort:          "created_at",
+		SortDirection: "DESC",
+		Filter: struct {
+			Status *string
+			UserID *int64
+		}{
+			UserID: &userID,
+		},
+	}
+
+	listings, err := s.model.listing.GetListings(ctx, &pagination)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	pbListings := make([]*pb.Listing, 0, len(listings))
+	for _, l := range listings {
+		pbListings = append(pbListings, listingToProtobufListing(&l))
+	}
+
+	return &pb.GetListingsByUserResponse{
+		Items:      pbListings,
+		Pagination: paginationToProtobufPagination(&pagination),
+	}, nil
 }
 
 func (s *Server) SendListingToModeration(_ context.Context, req *pb.SendListingToModerationRequest) (*pb.SendListingToModerationResponse, error) {
