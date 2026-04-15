@@ -10,6 +10,13 @@ import (
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
+// Healthcheck godoc
+//
+//	@summary	healthcheck
+//	@tags		utility
+//	@produce	json
+//	@success	200
+//	@router		/healthcheck [get]
 func (h *Handler) Healthcheck(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()

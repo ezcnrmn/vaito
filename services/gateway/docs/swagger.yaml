@@ -1,0 +1,872 @@
+definitions:
+  handler.AuthenticateUserPayload:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  handler.CategoriesResponse:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/handler.Category'
+        type: array
+    type: object
+  handler.Category:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  handler.CreateListingPayload:
+    properties:
+      category_id:
+        example: 2
+        type: integer
+      description:
+        example: 'Полный комплект: Зарядное устройство. Коробка. Наушники. Чехол в
+          подарок.'
+        type: string
+      price:
+        example: 1500
+        minimum: 1
+        type: integer
+      title:
+        example: Продам iPhone 3G
+        maxLength: 300
+        minLength: 10
+        type: string
+    required:
+    - category_id
+    - description
+    - price
+    - title
+    type: object
+  handler.CreateUserPayload:
+    properties:
+      email:
+        example: user@test.com
+        type: string
+      name:
+        example: User
+        maxLength: 50
+        minLength: 3
+        type: string
+      password:
+        example: pa55word
+        maxLength: 100
+        minLength: 8
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  handler.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  handler.Listing:
+    properties:
+      category_id:
+        type: integer
+      category_name:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      price:
+        type: integer
+      published_at:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  handler.ListingResponse:
+    properties:
+      listing:
+        $ref: '#/definitions/handler.Listing'
+    type: object
+  handler.MessageResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  handler.PaginatedListingResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/handler.Listing'
+        type: array
+      pagination:
+        $ref: '#/definitions/handler.Pagination'
+    type: object
+  handler.Pagination:
+    properties:
+      page:
+        type: integer
+      size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  handler.TokenResponse:
+    properties:
+      token:
+        type: string
+      userID:
+        type: integer
+    type: object
+  handler.UpdateListingPayload:
+    properties:
+      category_id:
+        example: 2
+        type: integer
+      description:
+        example: 'Полный комплект: Зарядное устройство. Коробка. Наушники. Чехол в
+          подарок.'
+        type: string
+      price:
+        example: 1500
+        minimum: 1
+        type: integer
+      title:
+        example: Продам iPhone 3G
+        maxLength: 300
+        minLength: 10
+        type: string
+    type: object
+  handler.UpdateUserPasswordPayload:
+    properties:
+      password:
+        example: pa55word
+        maxLength: 100
+        minLength: 8
+        type: string
+    required:
+    - password
+    type: object
+  handler.UpdateUserPayload:
+    properties:
+      email:
+        example: user@test.com
+        type: string
+      name:
+        example: User
+        maxLength: 50
+        minLength: 3
+        type: string
+    type: object
+  handler.User:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      role_name:
+        type: string
+    type: object
+  handler.UserResponse:
+    properties:
+      user:
+        $ref: '#/definitions/handler.User'
+    type: object
+info:
+  contact: {}
+  title: Vaito Gateway API
+  version: "1.0"
+paths:
+  /categories:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.CategoriesResponse'
+      summary: Получение категорий
+      tags:
+      - categories
+  /healthcheck:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: healthcheck
+      tags:
+      - utility
+  /listings:
+    get:
+      parameters:
+      - default: 1
+        description: Страница
+        in: query
+        name: page
+        required: true
+        type: integer
+      - default: 25
+        description: Количество объявлений на страницу
+        in: query
+        name: size
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.PaginatedListingResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Получение объявлений с пагинацией (только активные)
+      tags:
+      - listings
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Данные нового объявления
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateListingPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ListingResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Создание объявления
+      tags:
+      - listings
+  /listings/{id}:
+    delete:
+      parameters:
+      - description: Идентификатор объявления
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Удаление объявления
+      tags:
+      - listings
+    get:
+      parameters:
+      - description: Идентификатор объявления
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ListingResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Получение данных объявления (только активные)
+      tags:
+      - listings
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Идентификатор объявления
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Данные объявления
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateListingPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ListingResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "423":
+          description: Locked
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Обновление данных объявления
+      tags:
+      - listings
+  /listings/{id}/activate:
+    post:
+      parameters:
+      - description: Идентификатор объявления
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Активация объявления (только неактивные)
+      tags:
+      - listings
+  /listings/{id}/deactivate:
+    post:
+      parameters:
+      - description: Идентификатор объявления
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Деактивация объявления
+      tags:
+      - listings
+  /listings/{id}/moderation:
+    post:
+      parameters:
+      - description: Идентификатор объявления
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Отправка объявления на модерацию
+      tags:
+      - listings
+  /login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Email и пароль пользователя
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handler.AuthenticateUserPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.TokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Аутентификация пользователя
+      tags:
+      - users
+  /moderation/listings:
+    get:
+      parameters:
+      - default: 1
+        description: Страница
+        in: query
+        name: page
+        required: true
+        type: integer
+      - default: 25
+        description: Количество объявлений на страницу
+        in: query
+        name: size
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.PaginatedListingResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получение объявлений отправленных на модерацию
+      tags:
+      - moderation
+  /moderation/listings/{id}/activate:
+    post:
+      parameters:
+      - description: Идентификатор объявления
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Активация объявления модерацией
+      tags:
+      - moderation
+  /moderation/listings/{id}/deactivate:
+    post:
+      parameters:
+      - description: Идентификатор объявления
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Деактивация объявления модерацией
+      tags:
+      - moderation
+  /users:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Данные нового пользователя
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateUserPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Создание пользователя
+      tags:
+      - users
+  /users/{userID}:
+    get:
+      parameters:
+      - description: Идентификатор пользователя
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.UserResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Получение данных пользователя
+      tags:
+      - users
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Идентификатор пользователя
+        in: path
+        name: userID
+        required: true
+        type: integer
+      - description: Данные пользователя
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateUserPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Обновление данных пользователя
+      tags:
+      - users
+  /users/{userID}/listings:
+    get:
+      parameters:
+      - description: Идентификатор пользователя
+        in: path
+        name: userID
+        required: true
+        type: integer
+      - default: 1
+        description: Страница
+        in: query
+        name: page
+        required: true
+        type: integer
+      - default: 25
+        description: Количество объявлений на страницу
+        in: query
+        name: size
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.PaginatedListingResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получение объявлений пользователя с пагинацией
+      tags:
+      - users
+  /users/{userID}/listings/{id}:
+    get:
+      parameters:
+      - description: Идентификатор пользователя
+        in: path
+        name: userID
+        required: true
+        type: integer
+      - description: Идентификатор объявления
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ListingResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получение данных объявления пользователя
+      tags:
+      - users
+  /users/{userID}/update-password:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Идентификатор пользователя
+        in: path
+        name: userID
+        required: true
+        type: integer
+      - description: Пароль пользователя
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateUserPasswordPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Обновление пароля пользователя
+      tags:
+      - users
+securityDefinitions:
+  BearerAuth:
+    description: 'Введите токен в формате: Bearer ...'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

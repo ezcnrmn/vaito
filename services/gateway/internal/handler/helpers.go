@@ -78,15 +78,18 @@ func (h *Handler) handleGRPCError(w http.ResponseWriter, err error, handler func
 	sendInternalError(w)
 }
 
-type user struct {
+type User struct {
 	ID       int64  `json:"id"`
 	Name     string `json:"name"`
 	Email    string `json:"email"`
 	RoleName string `json:"role_name"`
 }
+type UserResponse struct {
+	User User `json:"user"`
+}
 
 func writeUserResponse(w http.ResponseWriter, userResponse *pbUser.User) {
-	user := user{
+	user := User{
 		ID:       userResponse.GetId(),
 		Name:     userResponse.GetName(),
 		Email:    userResponse.GetEmail(),
@@ -96,22 +99,25 @@ func writeUserResponse(w http.ResponseWriter, userResponse *pbUser.User) {
 	jsonutil.WriteJSON(w, http.StatusOK, jsonutil.Envelope{"user": user})
 }
 
-type category struct {
+type Category struct {
 	ID   int64  `json:"id"`
 	Name string `json:"name"`
 }
+type CategoriesResponse struct {
+	Categories []Category `json:"categories"`
+}
 
 func writeCategoriesResponse(w http.ResponseWriter, categoryResponse []*pbListing.Category) {
-	categories := make([]category, 0, len(categoryResponse))
+	categories := make([]Category, 0, len(categoryResponse))
 
 	for _, c := range categoryResponse {
-		categories = append(categories, category{ID: c.GetId(), Name: c.GetName()})
+		categories = append(categories, Category{ID: c.GetId(), Name: c.GetName()})
 	}
 
 	jsonutil.WriteJSON(w, http.StatusOK, jsonutil.Envelope{"categories": categories})
 }
 
-type listing struct {
+type Listing struct {
 	ID           int64      `json:"id"`
 	Title        string     `json:"title"`
 	Description  string     `json:"description"`
@@ -123,15 +129,12 @@ type listing struct {
 	CreatedAt    *time.Time `json:"created_at"`
 	PublishedAt  *time.Time `json:"published_at"`
 }
-
-type pagination struct {
-	Page  int32 `json:"page"`
-	Size  int32 `json:"size"`
-	Total int32 `json:"total"`
+type ListingResponse struct {
+	Listing Listing `json:"listing"`
 }
 
 func writeListingResponse(w http.ResponseWriter, listingResponse *pbListing.Listing) {
-	listing := listing{
+	listing := Listing{
 		ID:           listingResponse.GetId(),
 		Title:        listingResponse.GetTitle(),
 		Description:  listingResponse.GetDescription(),
@@ -153,10 +156,21 @@ func writeListingResponse(w http.ResponseWriter, listingResponse *pbListing.List
 	jsonutil.WriteJSON(w, http.StatusOK, jsonutil.Envelope{"listing": listing})
 }
 
+type Pagination struct {
+	Page  int32 `json:"page"`
+	Size  int32 `json:"size"`
+	Total int32 `json:"total"`
+}
+
+type PaginatedListingResponse struct {
+	Items      []Listing  `json:"items"`
+	Pagination Pagination `json:"pagination"`
+}
+
 func writePaginatedListingResponse(w http.ResponseWriter, listingsResponse []*pbListing.Listing, paginationResponse *pbListing.PaginationResponse) {
-	listings := make([]listing, 0, len(listingsResponse))
+	listings := make([]Listing, 0, len(listingsResponse))
 	for _, l := range listingsResponse {
-		listing := listing{
+		listing := Listing{
 			ID:           l.GetId(),
 			Title:        l.GetTitle(),
 			Description:  l.GetDescription(),
@@ -179,12 +193,16 @@ func writePaginatedListingResponse(w http.ResponseWriter, listingsResponse []*pb
 
 	jsonutil.WriteJSON(w, http.StatusOK, jsonutil.Envelope{
 		"items": listings,
-		"pagination": pagination{
+		"pagination": Pagination{
 			Page:  paginationResponse.GetPage(),
 			Size:  paginationResponse.GetSize(),
 			Total: paginationResponse.GetTotal(),
 		},
 	})
+}
+
+type MessageResponse struct {
+	Message string `json:"message"`
 }
 
 func sendSuccessMessage(w http.ResponseWriter, message string) {

@@ -1,14 +1,18 @@
-INSERT INTO permissions (code)
+INSERT INTO permissions (id, code)
 VALUES
-  ('listing:create'),
-  ('listing:delete'),
-  ('listing:edit'),
-  ('listing:moderate');
+  (1, 'listing:create'),
+  (2, 'listing:delete'),
+  (3, 'listing:edit'),
+  (4, 'listing:moderate');
 
-INSERT INTO roles (name)
+SELECT setval(pg_get_serial_sequence('permissions', 'id'), (SELECT MAX(id) FROM permissions));
+
+INSERT INTO roles (id, name)
 VALUES
-  ('Administrator'),
-  ('User');
+  (1, 'Administrator'),
+  (2, 'User');
+
+SELECT setval(pg_get_serial_sequence('roles', 'id'), (SELECT MAX(id) FROM roles));
 
 INSERT INTO roles_permissions (role_id, permission_id)
 SELECT roles.id, permissions.id

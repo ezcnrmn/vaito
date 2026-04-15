@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"errors"
-	"time"
 
 	pb "github.com/ezcnrmn/vaito/gen/go/listing"
 	"github.com/ezcnrmn/vaito/services/listing/internal/model"
@@ -11,10 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) GetModerationListings(_ context.Context, req *pb.GetModerationListingsRequest) (*pb.GetModerationListingsResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *Server) GetModerationListings(ctx context.Context, req *pb.GetModerationListingsRequest) (*pb.GetModerationListingsResponse, error) {
 	token := req.Authentication.GetToken()
 	_, err := s.validatePermission(ctx, token, "listing:moderate")
 	if err != nil {
@@ -51,10 +47,7 @@ func (s *Server) GetModerationListings(_ context.Context, req *pb.GetModerationL
 	}, nil
 }
 
-func (s *Server) ActivateListingByModeration(_ context.Context, req *pb.ActivateListingByModerationRequest) (*pb.ActivateListingByModerationResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *Server) ActivateListingByModeration(ctx context.Context, req *pb.ActivateListingByModerationRequest) (*pb.ActivateListingByModerationResponse, error) {
 	token := req.Authentication.GetToken()
 	_, err := s.validatePermission(ctx, token, "listing:moderate")
 	if err != nil {
@@ -83,10 +76,7 @@ func (s *Server) ActivateListingByModeration(_ context.Context, req *pb.Activate
 	return &pb.ActivateListingByModerationResponse{}, nil
 }
 
-func (s *Server) DeactivateListingByModeration(_ context.Context, req *pb.DeactivateListingByModerationRequest) (*pb.DeactivateListingByModerationResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *Server) DeactivateListingByModeration(ctx context.Context, req *pb.DeactivateListingByModerationRequest) (*pb.DeactivateListingByModerationResponse, error) {
 	token := req.Authentication.GetToken()
 	_, err := s.validatePermission(ctx, token, "listing:moderate")
 	if err != nil {

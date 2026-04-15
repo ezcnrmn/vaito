@@ -4,15 +4,19 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/ezcnrmn/vaito/services/gateway/docs"
 	"github.com/ezcnrmn/vaito/services/gateway/internal/handler"
 	"github.com/ezcnrmn/vaito/services/gateway/internal/lib/contextutil"
 	"github.com/ezcnrmn/vaito/services/gateway/internal/lib/jsonutil"
 	"github.com/julienschmidt/httprouter"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 const apiV1 = "/api/v1"
 
 func (a *App) routes() http.Handler {
+	docs.SwaggerInfo.BasePath = apiV1
+
 	handler := handler.New(a.log, a.services.user, a.services.listing, a.services.health.user, a.services.health.listing)
 	routes := httprouter.New()
 
@@ -20,6 +24,10 @@ func (a *App) routes() http.Handler {
 	routes.MethodNotAllowed = http.HandlerFunc(handler.MethodNotAllowed)
 
 	routes.HandlerFunc(http.MethodGet, apiV1+"/healthcheck", handler.Healthcheck)
+
+	routes.Handler(http.MethodGet, "/swagger/*path", httpSwagger.Handler(
+		httpSwagger.URL("doc.json"),
+	))
 
 	routes.HandlerFunc(http.MethodPost, apiV1+"/users", handler.CreateUser)
 	routes.HandlerFunc(http.MethodPatch, apiV1+"/users/:userID", handler.UpdateUser)

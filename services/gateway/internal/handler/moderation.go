@@ -10,6 +10,19 @@ import (
 	"google.golang.org/grpc/codes"
 )
 
+// ModerationListings - Получение объявлений отправленных на модерацию
+//
+//	@summary	Получение объявлений отправленных на модерацию
+//	@tags		moderation
+//	@param		page	query	int	true	"Страница"							default(1)
+//	@param		size	query	int	true	"Количество объявлений на страницу"	default(25)
+//	@produce	json
+//	@success	200	{object}	PaginatedListingResponse
+//	@failure	400	{object}	ErrorResponse
+//	@failure	401	{object}	ErrorResponse
+//	@failure	403	{object}	ErrorResponse
+//	@security	BearerAuth
+//	@router		/moderation/listings [get]
 func (h *Handler) ModerationListings(w http.ResponseWriter, r *http.Request) {
 	token := contextutil.GetToken(r)
 	if token == "" {
@@ -53,6 +66,19 @@ func (h *Handler) ModerationListings(w http.ResponseWriter, r *http.Request) {
 	writePaginatedListingResponse(w, resp.Items, resp.Pagination)
 }
 
+// ModerationActivateListing - Активация объявления модерацией
+//
+//	@summary	Активация объявления модерацией
+//	@tags		moderation
+//	@param		id	path	int	true	"Идентификатор объявления"
+//	@produce	json
+//	@success	200	{object}	MessageResponse
+//	@failure	400	{object}	ErrorResponse
+//	@failure	401	{object}	ErrorResponse
+//	@failure	403	{object}	ErrorResponse
+//	@failure	404	{object}	ErrorResponse
+//	@security	BearerAuth
+//	@router		/moderation/listings/{id}/activate [post]
 func (h *Handler) ModerationActivateListing(w http.ResponseWriter, r *http.Request) {
 	token := contextutil.GetToken(r)
 	if token == "" {
@@ -97,6 +123,19 @@ func (h *Handler) ModerationActivateListing(w http.ResponseWriter, r *http.Reque
 	sendSuccessMessage(w, "listing successfully activated")
 }
 
+// ModerationDeactivateListing - Деактивация объявления модерацией
+//
+//	@summary	Деактивация объявления модерацией
+//	@tags		moderation
+//	@param		id	path	int	true	"Идентификатор объявления"
+//	@produce	json
+//	@success	200	{object}	MessageResponse
+//	@failure	400	{object}	ErrorResponse
+//	@failure	401	{object}	ErrorResponse
+//	@failure	403	{object}	ErrorResponse
+//	@failure	404	{object}	ErrorResponse
+//	@security	BearerAuth
+//	@router		/moderation/listings/{id}/deactivate [post]
 func (h *Handler) ModerationDeactivateListing(w http.ResponseWriter, r *http.Request) {
 	token := contextutil.GetToken(r)
 	if token == "" {

@@ -26,6 +26,11 @@ db/migrations/listing/new: ## Creates new db migration for listing service with 
 db/migrations/listing/up: ## Apply db migrations for listing service
 	migrate -path=./migrations/listing/ -database=${LISTING_DB_DSN} up
 
+.PHONY: db/seed
+db/seed: ## Adds seed data to db
+	docker exec -i vaito_postgres psql -U ${USER_DB_USER} -d ${USER_DB_NAME} < scripts/user_dev_data.sql
+	docker exec -i vaito_postgres psql -U ${LISTING_DB_USER} -d ${LISTING_DB_NAME} < scripts/listing_dev_data.sql
+
 .PHONY: run/gateway
 run/gateway: ## Runs gateway service
 	-go run -C services/gateway ./cmd/api/main.go -debug-log
@@ -81,3 +86,10 @@ gen/listing: ## Gens go code for listing/v1 .proto
 
 	@cd $(LISTING_OUT_DIR) && go mod tidy
 
+.PHONY: gen/swag
+gen/swag: ## Gens swagger docs
+	swag init -d services/gateway -g cmd/api/main.go -o ./services/gateway/docs/ 
+
+.PHONY: gen/swag/fmt
+gen/swag/fmt: ## Formats swagger comments
+	swag fmt -g ./services/gateway/cmd/api/main.go

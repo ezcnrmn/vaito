@@ -11,10 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) CreateUser(_ context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
+func (s *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
 	user := model.User{
 		Name:      req.GetName(),
 		Email:     req.GetEmail(),
@@ -43,10 +40,7 @@ func (s *Server) CreateUser(_ context.Context, req *pb.CreateUserRequest) (*pb.C
 
 const invalidTokenMsg = "invalid token"
 
-func (s *Server) UpdateUser(_ context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
 	token := &model.Token{
 		Scope: model.ScopeAuthentication,
 		Text:  req.Token.GetToken(),
@@ -91,10 +85,7 @@ func (s *Server) UpdateUser(_ context.Context, req *pb.UpdateUserRequest) (*pb.U
 	}, nil
 }
 
-func (s *Server) UpdateUserPassword(_ context.Context, req *pb.UpdateUserPasswordRequest) (*pb.UpdateUserPasswordResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *Server) UpdateUserPassword(ctx context.Context, req *pb.UpdateUserPasswordRequest) (*pb.UpdateUserPasswordResponse, error) {
 	token := &model.Token{
 		Scope: model.ScopeAuthentication,
 		Text:  req.Token.GetToken(),
@@ -136,10 +127,7 @@ func (s *Server) UpdateUserPassword(_ context.Context, req *pb.UpdateUserPasswor
 	return &pb.UpdateUserPasswordResponse{}, nil
 }
 
-func (s *Server) GetUser(_ context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
+func (s *Server) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
 	id := req.GetId()
 
 	user, err := s.model.user.GetUser(ctx, id)
@@ -156,10 +144,7 @@ func (s *Server) GetUser(_ context.Context, req *pb.GetUserRequest) (*pb.GetUser
 	}, nil
 }
 
-func (s *Server) GetUserIDByToken(_ context.Context, req *pb.GetUserIDByTokenRequest) (*pb.GetUserIDByTokenResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
+func (s *Server) GetUserIDByToken(ctx context.Context, req *pb.GetUserIDByTokenRequest) (*pb.GetUserIDByTokenResponse, error) {
 	token := &model.Token{
 		Scope: model.ScopeAuthentication,
 		Text:  req.Token.GetToken(),
@@ -183,10 +168,7 @@ func (s *Server) GetUserIDByToken(_ context.Context, req *pb.GetUserIDByTokenReq
 	}, nil
 }
 
-func (s *Server) GetUserPermissionsByToken(_ context.Context, req *pb.GetUserPermissionsByTokenRequest) (*pb.GetUserPermissionsByTokenResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
+func (s *Server) GetUserPermissionsByToken(ctx context.Context, req *pb.GetUserPermissionsByTokenRequest) (*pb.GetUserPermissionsByTokenResponse, error) {
 	token := &model.Token{
 		Scope: model.ScopeAuthentication,
 		Text:  req.Token.GetToken(),

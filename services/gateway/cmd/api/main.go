@@ -11,6 +11,13 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+// @title						Vaito Gateway API
+// @version					1.0
+//
+// @securityDefinitions.apikey	BearerAuth
+// @in							header
+// @name						Authorization
+// @description				Введите токен в формате: Bearer ...
 func main() {
 	showDebug := flag.Bool("debug-log", false, "Sets log level to Debug and shows source of message")
 	flag.Parse()

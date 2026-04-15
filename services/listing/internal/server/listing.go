@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"errors"
-	"time"
 
 	pb "github.com/ezcnrmn/vaito/gen/go/listing"
 	"github.com/ezcnrmn/vaito/services/listing/internal/model"
@@ -11,10 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) CreateListing(_ context.Context, req *pb.CreateListingRequest) (*pb.CreateListingResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *Server) CreateListing(ctx context.Context, req *pb.CreateListingRequest) (*pb.CreateListingResponse, error) {
 	token := req.Authentication.GetToken()
 	userID, err := s.validatePermission(ctx, token, "listing:create")
 	if err != nil {
@@ -39,10 +35,7 @@ func (s *Server) CreateListing(_ context.Context, req *pb.CreateListingRequest) 
 	}, nil
 }
 
-func (s *Server) UpdateListing(_ context.Context, req *pb.UpdateListingRequest) (*pb.UpdateListingResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *Server) UpdateListing(ctx context.Context, req *pb.UpdateListingRequest) (*pb.UpdateListingResponse, error) {
 	token := req.Authentication.GetToken()
 	userID, err := s.validatePermission(ctx, token, "listing:edit")
 	if err != nil {
@@ -82,10 +75,7 @@ func (s *Server) UpdateListing(_ context.Context, req *pb.UpdateListingRequest) 
 	}, nil
 }
 
-func (s *Server) DeleteListing(_ context.Context, req *pb.DeleteListingRequest) (*pb.DeleteListingResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
+func (s *Server) DeleteListing(ctx context.Context, req *pb.DeleteListingRequest) (*pb.DeleteListingResponse, error) {
 	token := req.Authentication.GetToken()
 	userID, err := s.validatePermission(ctx, token, "listing:delete")
 	if err != nil {
@@ -105,10 +95,7 @@ func (s *Server) DeleteListing(_ context.Context, req *pb.DeleteListingRequest) 
 	return &pb.DeleteListingResponse{}, nil
 }
 
-func (s *Server) GetListing(_ context.Context, req *pb.GetListingRequest) (*pb.GetListingResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
+func (s *Server) GetListing(ctx context.Context, req *pb.GetListingRequest) (*pb.GetListingResponse, error) {
 	id, statusName := req.GetId(), "Active"
 	listing, err := s.model.listing.GetListing(ctx, id, nil, &statusName)
 	if err != nil {
@@ -124,10 +111,7 @@ func (s *Server) GetListing(_ context.Context, req *pb.GetListingRequest) (*pb.G
 	}, nil
 }
 
-func (s *Server) GetUserListing(_ context.Context, req *pb.GetUserListingRequest) (*pb.GetUserListingResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *Server) GetUserListing(ctx context.Context, req *pb.GetUserListingRequest) (*pb.GetUserListingResponse, error) {
 	token := req.Authentication.GetToken()
 	userID, err := s.validateToken(ctx, token)
 	if err != nil {
@@ -154,10 +138,7 @@ func (s *Server) GetUserListing(_ context.Context, req *pb.GetUserListingRequest
 	}, nil
 }
 
-func (s *Server) GetActiveListings(_ context.Context, req *pb.GetActiveListingsRequest) (*pb.GetActiveListingsResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
+func (s *Server) GetActiveListings(ctx context.Context, req *pb.GetActiveListingsRequest) (*pb.GetActiveListingsResponse, error) {
 	statusName := "Active"
 	pagination := model.Pagination{
 		Page:          req.GetPagination().GetPage(),
@@ -188,10 +169,7 @@ func (s *Server) GetActiveListings(_ context.Context, req *pb.GetActiveListingsR
 	}, nil
 }
 
-func (s *Server) GetListingsByUser(_ context.Context, req *pb.GetListingsByUserRequest) (*pb.GetListingsByUserResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *Server) GetListingsByUser(ctx context.Context, req *pb.GetListingsByUserRequest) (*pb.GetListingsByUserResponse, error) {
 	token := req.Authentication.GetToken()
 	userID, err := s.validateToken(ctx, token)
 	if err != nil {
@@ -232,10 +210,7 @@ func (s *Server) GetListingsByUser(_ context.Context, req *pb.GetListingsByUserR
 	}, nil
 }
 
-func (s *Server) SendListingToModeration(_ context.Context, req *pb.SendListingToModerationRequest) (*pb.SendListingToModerationResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *Server) SendListingToModeration(ctx context.Context, req *pb.SendListingToModerationRequest) (*pb.SendListingToModerationResponse, error) {
 	token := req.Authentication.GetToken()
 	userID, err := s.validatePermission(ctx, token, "listing:edit")
 	if err != nil {
@@ -260,10 +235,7 @@ func (s *Server) SendListingToModeration(_ context.Context, req *pb.SendListingT
 	return &pb.SendListingToModerationResponse{}, nil
 }
 
-func (s *Server) ActivateListing(_ context.Context, req *pb.ActivateListingRequest) (*pb.ActivateListingResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *Server) ActivateListing(ctx context.Context, req *pb.ActivateListingRequest) (*pb.ActivateListingResponse, error) {
 	token := req.Authentication.GetToken()
 	userID, err := s.validatePermission(ctx, token, "listing:edit")
 	if err != nil {
@@ -288,10 +260,7 @@ func (s *Server) ActivateListing(_ context.Context, req *pb.ActivateListingReque
 	return &pb.ActivateListingResponse{}, nil
 }
 
-func (s *Server) DeactivateListing(_ context.Context, req *pb.DeactivateListingRequest) (*pb.DeactivateListingResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *Server) DeactivateListing(ctx context.Context, req *pb.DeactivateListingRequest) (*pb.DeactivateListingResponse, error) {
 	token := req.Authentication.GetToken()
 	userID, err := s.validatePermission(ctx, token, "listing:edit")
 	if err != nil {
@@ -316,10 +285,7 @@ func (s *Server) DeactivateListing(_ context.Context, req *pb.DeactivateListingR
 	return &pb.DeactivateListingResponse{}, nil
 }
 
-func (s *Server) GetCategories(_ context.Context, req *pb.GetCategoriesRequest) (*pb.GetCategoriesResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
+func (s *Server) GetCategories(ctx context.Context, req *pb.GetCategoriesRequest) (*pb.GetCategoriesResponse, error) {
 	categories, err := s.model.listing.GetCategories(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "unable to get categories")

@@ -13,10 +13,7 @@ import (
 
 const unauthenticatedMsg = "invalid authentication credentials"
 
-func (s *Server) AuthenticateUser(_ context.Context, req *pb.AuthenticateUserRequest) (*pb.AuthenticateUserResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *Server) AuthenticateUser(ctx context.Context, req *pb.AuthenticateUserRequest) (*pb.AuthenticateUserResponse, error) {
 	email, password := req.GetEmail(), req.GetPassword()
 
 	user, err := s.model.user.GetUserByEmail(ctx, email)

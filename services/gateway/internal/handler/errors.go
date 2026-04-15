@@ -9,6 +9,10 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+type ErrorResponse struct {
+	Error string `json:"error"`
+}
+
 func (h *Handler) NotFound(w http.ResponseWriter, _ *http.Request) {
 	msg := "the requested resource could not be found"
 	sendError(w, http.StatusNotFound, msg)
