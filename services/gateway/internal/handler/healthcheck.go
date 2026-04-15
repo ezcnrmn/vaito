@@ -54,7 +54,7 @@ func (h *Handler) Healthcheck(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := jsonutil.Envelope{
-		"status":    "available",
+		"status":    "SERVING",
 		"timestamp": time.Now(),
 		"services":  responses,
 	}

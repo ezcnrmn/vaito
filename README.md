@@ -23,6 +23,8 @@ graph LR
   Listing -->|SQL| DB_Listing
 ```
 
+[Схемы базы данных](#схемы-базы-данных)
+
 ## Стек технологий
 
 - Language: Go 1.25+
@@ -106,3 +108,80 @@ make db/seed
 | -------- | ---------------- | --------------- |
 | email    | `admin@test.com` | `user@test.com` |
 | password | `12345678`       | `12345678`      |
+
+
+## Схемы базы данных
+
+### Users
+
+```mermaid
+erDiagram
+  User ||--o{ Role: "назначена"
+  User ||--o{ Token: "владеет"
+  Role ||--o{ RolePermission: "включает"
+  Permission ||--o{ RolePermission: "представлено"
+
+  User {
+    int id PK
+    string name
+    string email UK
+    binary password_hash
+    int role_id FK
+    timestamp created_at
+    int version
+  }
+
+  Role {
+    int id PK
+    string name UK
+  }
+
+  Permission {
+    int id PK
+    string code UK
+  }
+
+  RolePermission {
+    int role_id PK, FK
+    int permission_id PK, FK
+  }
+
+  Token {
+    binary hash PK
+    int user_id FK
+    string scope
+    timestamp expires_at
+  }
+```
+
+### Listings
+
+```mermaid
+erDiagram
+  Listing ||--o{ ListingStatus: "имеет статус"
+  Listing ||--o{ Category: "принадлежит"
+  User ||..o{ Listing : "создаёт"
+
+  Category {
+    int id PK
+    string name
+  }
+
+  ListingStatus {
+    int id PK
+    string name UK
+  }
+
+  Listing {
+    int id PK
+    string title
+    string description
+    int category_id FK
+    int user_id "ID из внешней БД"
+    timestamp created_at
+    timestamp published_at
+    int version
+    int status_id FK
+    int price
+  }
+```
