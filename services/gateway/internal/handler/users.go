@@ -65,6 +65,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: возможно вернуть код 201
 	writeUserResponse(w, resp.GetUser())
 }
 

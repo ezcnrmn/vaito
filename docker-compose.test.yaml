@@ -1,0 +1,93 @@
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: ./services/gateway/Dockerfile
+    networks:
+      - vaito_inner_net
+      - vaito_outer_net
+    ports:
+      - "${GATEWAY_PORT}"
+    env_file:
+      - .env
+
+  user:
+    build:
+      context: .
+      dockerfile: ./services/user/Dockerfile
+    depends_on: 
+      postgres_db:
+        condition: service_healthy
+      migration_user:
+        condition: service_completed_successfully
+    networks:
+      - vaito_inner_net
+    env_file:
+      - .env
+
+  listing:
+    build:
+      context: .
+      dockerfile: ./services/listing/Dockerfile
+    depends_on: 
+      postgres_db:
+        condition: service_healthy
+      migration_listing:
+        condition: service_completed_successfully
+    networks:
+      - vaito_inner_net
+    env_file:
+      - .env
+
+  postgres_db:
+    image: postgres:18
+    volumes:
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+    networks:
+      - vaito_inner_net
+    ports:
+      - "5432"
+    env_file: .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 10
+
+  migration_user:
+    image: migrate/migrate
+    entrypoint: sh -c "sleep 5 && migrate -path=/migrations/ -database=${USER_DB_DSN} up"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 5
+    volumes:
+      - ./migrations/user/:/migrations
+    networks:
+      - vaito_inner_net
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+
+  migration_listing:
+    image: migrate/migrate
+    entrypoint: sh -c "sleep 5 && migrate -path=/migrations/ -database=${LISTING_DB_DSN} up"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 5
+    volumes:
+      - ./migrations/listing/:/migrations
+    networks:
+      - vaito_inner_net
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+
+networks:
+  vaito_outer_net:
+    driver: bridge
+  vaito_inner_net:
+    driver: bridge

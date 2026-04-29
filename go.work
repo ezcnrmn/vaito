@@ -6,4 +6,5 @@ use (
 	./services/gateway
 	./services/listing
 	./services/user
+	./test/e2e
 )
