@@ -2,8 +2,15 @@ package e2e
 
 import (
 	"database/sql"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
+	"net/http"
+	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func seedDatabase(db *sql.DB) error {
@@ -34,7 +41,56 @@ func cleanUserTable(t *testing.T, db *sql.DB) {
 
 	query := `DELETE FROM users WHERE id > 2;`
 	_, err := db.Exec(query)
+	assert.NoError(t, err)
+}
+
+func readJSON(t *testing.T, body io.ReadCloser, dst any) {
+	t.Helper()
+
+	dec := json.NewDecoder(body)
+
+	err := dec.Decode(dst)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Unable decode json: %v", err)
 	}
+
+	err = dec.Decode(&struct{}{})
+	if !errors.Is(err, io.EOF) {
+		t.Fatal("Response contains several jsons")
+	}
+}
+
+func sendPost(t *testing.T, client *http.Client, url, payload, token string) *http.Response {
+	t.Helper()
+
+	reader := strings.NewReader(payload)
+
+	req, err := http.NewRequest("POST", url, reader)
+	assert.NoError(t, err)
+
+	req.Header.Set("Content-Type", "application/json")
+	if token != "" {
+		req.Header.Add("Authorization", "Bearer "+token)
+	}
+
+	resp, err := client.Do(req)
+	assert.NoError(t, err)
+
+	return resp
+}
+
+func sendGet(t *testing.T, client *http.Client, url, token string) *http.Response {
+	t.Helper()
+
+	req, err := http.NewRequest("GET", url, nil)
+	assert.NoError(t, err)
+
+	if token != "" {
+		req.Header.Add("Authorization", "Bearer "+token)
+	}
+
+	resp, err := client.Do(req)
+	assert.NoError(t, err)
+
+	return resp
 }

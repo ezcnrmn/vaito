@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type User struct {
@@ -18,14 +20,11 @@ func TestCreateUser(t *testing.T) {
 		reader := strings.NewReader(payload)
 
 		resp, err := http.Post(gatewayAddr+"/api/v1/users", "application/json", reader)
-		if err != nil {
-			t.Fatalf("Failed to send request: %v", err)
-		}
+		assert.NoError(t, err)
+
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			t.Errorf("Expected %d, got %d", http.StatusOK, resp.StatusCode)
-		}
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 
 	t.Run("creating existing user", func(t *testing.T) {
@@ -33,14 +32,11 @@ func TestCreateUser(t *testing.T) {
 		reader := strings.NewReader(payload)
 
 		resp, err := http.Post(gatewayAddr+"/api/v1/users", "application/json", reader)
-		if err != nil {
-			t.Fatalf("Failed to send request: %v", err)
-		}
+		assert.NoError(t, err)
+
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusConflict {
-			t.Errorf("Expected %d, got %d", http.StatusConflict, resp.StatusCode)
-		}
+		assert.Equal(t, http.StatusConflict, resp.StatusCode)
 	})
 
 	cleanUserTable(t, db)
