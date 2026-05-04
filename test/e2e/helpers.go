@@ -60,13 +60,15 @@ func readJSON(t *testing.T, body io.ReadCloser, dst any) {
 	}
 }
 
-func sendPost(t *testing.T, client *http.Client, url, payload, token string) *http.Response {
+func send(t *testing.T, client *http.Client, method, url, payload, token string) (*http.Response, error) {
 	t.Helper()
 
 	reader := strings.NewReader(payload)
 
-	req, err := http.NewRequest("POST", url, reader)
-	assert.NoError(t, err)
+	req, err := http.NewRequest(method, url, reader)
+	if err != nil {
+		return nil, err
+	}
 
 	req.Header.Set("Content-Type", "application/json")
 	if token != "" {
@@ -74,23 +76,23 @@ func sendPost(t *testing.T, client *http.Client, url, payload, token string) *ht
 	}
 
 	resp, err := client.Do(req)
-	assert.NoError(t, err)
 
-	return resp
+	return resp, err
 }
 
-func sendGet(t *testing.T, client *http.Client, url, token string) *http.Response {
+func sendGet(t *testing.T, client *http.Client, url, token string) (*http.Response, error) {
 	t.Helper()
 
 	req, err := http.NewRequest("GET", url, nil)
-	assert.NoError(t, err)
+	if err != nil {
+		return nil, err
+	}
 
 	if token != "" {
 		req.Header.Add("Authorization", "Bearer "+token)
 	}
 
 	resp, err := client.Do(req)
-	assert.NoError(t, err)
 
-	return resp
+	return resp, err
 }

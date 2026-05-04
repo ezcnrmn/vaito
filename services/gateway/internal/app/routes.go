@@ -50,6 +50,7 @@ func (a *App) routes() http.Handler {
 	routes.HandlerFunc(http.MethodGet, apiV1+"/categories", handler.GetListingCategories)
 
 	routes.HandlerFunc(http.MethodGet, apiV1+"/moderation/listings", handler.ModerationListings)
+	// TODO: возможно сделать также получение отдельных листингов: apiV1+"/moderation/listings:id"
 	routes.HandlerFunc(http.MethodPost, apiV1+"/moderation/listings/:id/activate", handler.ModerationActivateListing)
 	routes.HandlerFunc(http.MethodPost, apiV1+"/moderation/listings/:id/deactivate", handler.ModerationDeactivateListing)
 

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type LoginData struct {
@@ -31,13 +32,6 @@ type Listing struct {
 	PublishedAt  *string `json:"published_at"`
 }
 
-type state struct {
-	userData   LoginData
-	adminData  LoginData
-	categoryID int
-	listingID  int
-}
-
 func TestListingFlow(t *testing.T) {
 	client := &http.Client{}
 	state := struct {
@@ -47,11 +41,20 @@ func TestListingFlow(t *testing.T) {
 		listingID  int
 	}{}
 
+	mustNotBePubliclyVisibleTest := func(t *testing.T) {
+		resp, err := sendGet(t, client, fmt.Sprintf("%s/api/v1/listings/%d", gatewayAddr, state.listingID), "")
+		require.NoError(t, err)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode, "listing must not be publicly visible")
+	}
+
 	t.Run("login as user and admin", func(t *testing.T) {
 		// login as user
 		userPayload := `{"password": "12345678", "email": "user@test.com"}`
 
-		userResp := sendPost(t, client, gatewayAddr+"/api/v1/login", userPayload, "")
+		userResp, err := send(t, client, "POST", gatewayAddr+"/api/v1/login", userPayload, "")
+		require.NoError(t, err)
 		defer userResp.Body.Close()
 
 		assert.Equal(t, http.StatusOK, userResp.StatusCode)
@@ -63,7 +66,8 @@ func TestListingFlow(t *testing.T) {
 		// login as admin
 		adminPayload := `{"password": "12345678", "email": "admin@test.com"}`
 
-		adminResp := sendPost(t, client, gatewayAddr+"/api/v1/login", adminPayload, "")
+		adminResp, err := send(t, client, "POST", gatewayAddr+"/api/v1/login", adminPayload, "")
+		require.NoError(t, err)
 		defer adminResp.Body.Close()
 
 		assert.Equal(t, http.StatusOK, adminResp.StatusCode)
@@ -74,7 +78,8 @@ func TestListingFlow(t *testing.T) {
 	})
 
 	t.Run("get categories", func(t *testing.T) {
-		resp := sendGet(t, client, gatewayAddr+"/api/v1/categories", "")
+		resp, err := sendGet(t, client, gatewayAddr+"/api/v1/categories", "")
+		require.NoError(t, err)
 		defer resp.Body.Close()
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -102,7 +107,8 @@ func TestListingFlow(t *testing.T) {
     "price": 1500
 		}`, state.categoryID)
 
-		resp := sendPost(t, client, gatewayAddr+"/api/v1/listings", listing, state.userData.Token)
+		resp, err := send(t, client, "POST", gatewayAddr+"/api/v1/listings", listing, state.userData.Token)
+		require.NoError(t, err)
 		defer resp.Body.Close()
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -127,21 +133,19 @@ func TestListingFlow(t *testing.T) {
 		state.listingID = listingResp.Listing.ID
 	})
 
-	t.Run("get created listing", func(t *testing.T) {
-		publicResp := sendGet(t, client, fmt.Sprintf("%s/api/v1/listings/%d", gatewayAddr, state.listingID), "")
-		defer publicResp.Body.Close()
+	t.Run("get created listing (public api)", mustNotBePubliclyVisibleTest)
 
-		assert.Equal(t, http.StatusNotFound, publicResp.StatusCode, "listing must not be publicly visible")
+	t.Run("get created listing (user api)", func(t *testing.T) {
+		resp, err := sendGet(t, client, fmt.Sprintf("%s/api/v1/users/%d/listings/%d", gatewayAddr, state.userData.UserID, state.listingID), state.userData.Token)
+		require.NoError(t, err)
+		defer resp.Body.Close()
 
-		userResp := sendGet(t, client, fmt.Sprintf("%s/api/v1/users/%d/listings/%d", gatewayAddr, state.userData.UserID, state.listingID), state.userData.Token)
-		defer userResp.Body.Close()
-
-		assert.Equal(t, http.StatusOK, userResp.StatusCode, "listing must be accessible to user")
+		assert.Equal(t, http.StatusOK, resp.StatusCode, "listing must be accessible to user")
 
 		var listingResp struct {
 			Listing Listing `json:"listing"`
 		}
-		readJSON(t, userResp.Body, &listingResp)
+		readJSON(t, resp.Body, &listingResp)
 
 		assert.Equal(t, state.listingID, listingResp.Listing.ID)
 		assert.Equal(t, "Продам iPhone 3G", listingResp.Listing.Title)
@@ -155,18 +159,191 @@ func TestListingFlow(t *testing.T) {
 		assert.Nil(t, listingResp.Listing.PublishedAt)
 	})
 
-	// 4. update listing
-	// 5. get this listing again (both ways)
-	// 6. send this listing to moderation
-	// 7. get this listing by user and check status
-	// 8. activate this listing as moderation
-	// 9 get this listing as public
-	// 10. deactivate listing as moderation
-	// 11. get listing as public
-	// 12. activate listing as user
-	// 13. get listing as public
-	// 14. deactivate listing as user
-	// 15. get listing as public
-	// 16. delete listing
-	// 17. get listing
+	t.Run("update listing", func(t *testing.T) {
+		listing := `{
+    "title": "Продам iPhone 3GS (2011)",
+    "description": "Полный комплект: Зарядное устройство. Коробка. Наушники. Чехол в подарок. UPD: Внешний вид с потёртостями",
+    "price": 2500
+		}`
+
+		resp, err := send(t, client, "PATCH", fmt.Sprintf("%s/api/v1/listings/%d", gatewayAddr, state.listingID), listing, state.userData.Token)
+		require.NoError(t, err)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		var listingResp struct {
+			Listing Listing `json:"listing"`
+		}
+
+		readJSON(t, resp.Body, &listingResp)
+
+		assert.Equal(t, "Продам iPhone 3GS (2011)", listingResp.Listing.Title)
+		assert.Equal(t, "Полный комплект: Зарядное устройство. Коробка. Наушники. Чехол в подарок. UPD: Внешний вид с потёртостями", listingResp.Listing.Description)
+		assert.Equal(t, 2500, listingResp.Listing.Price)
+	})
+
+	t.Run("get updated listing (public api)", mustNotBePubliclyVisibleTest)
+
+	t.Run("get updated listing (user api)", func(t *testing.T) {
+		resp, err := sendGet(t, client, fmt.Sprintf("%s/api/v1/users/%d/listings/%d", gatewayAddr, state.userData.UserID, state.listingID), state.userData.Token)
+		require.NoError(t, err)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode, "listing must be accessible to user")
+
+		var listingResp struct {
+			Listing Listing `json:"listing"`
+		}
+		readJSON(t, resp.Body, &listingResp)
+
+		assert.Equal(t, "Продам iPhone 3GS (2011)", listingResp.Listing.Title)
+		assert.Equal(t, "Полный комплект: Зарядное устройство. Коробка. Наушники. Чехол в подарок. UPD: Внешний вид с потёртостями", listingResp.Listing.Description)
+		assert.Equal(t, 2500, listingResp.Listing.Price)
+	})
+
+	t.Run("send listing to moderation", func(t *testing.T) {
+		resp, err := send(t, client, "POST", fmt.Sprintf("%s/api/v1/listings/%d/moderation", gatewayAddr, state.listingID), "", state.userData.Token)
+		require.NoError(t, err)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode, "listing must be successfully send to moderation")
+
+		secondResp, err := send(t, client, "POST", fmt.Sprintf("%s/api/v1/listings/%d/moderation", gatewayAddr, state.listingID), "", state.userData.Token)
+		require.NoError(t, err)
+		defer secondResp.Body.Close()
+
+		assert.Equal(t, http.StatusBadRequest, secondResp.StatusCode, "status must be changed only once")
+	})
+
+	t.Run("get listing with moderation status (user api)", func(t *testing.T) {
+		resp, err := sendGet(t, client, fmt.Sprintf("%s/api/v1/users/%d/listings/%d", gatewayAddr, state.userData.UserID, state.listingID), state.userData.Token)
+		require.NoError(t, err)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		var listingResp struct {
+			Listing Listing `json:"listing"`
+		}
+		readJSON(t, resp.Body, &listingResp)
+
+		assert.Equal(t, "Moderation", listingResp.Listing.Status)
+	})
+
+	t.Run("activate listing as moderation", func(t *testing.T) {
+		resp, err := send(t, client, "POST", fmt.Sprintf("%s/api/v1/moderation/listings/%d/activate", gatewayAddr, state.listingID), "", state.adminData.Token)
+		require.NoError(t, err)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode, "listing must be successfully activated")
+
+		secondResp, err := send(t, client, "POST", fmt.Sprintf("%s/api/v1/moderation/listings/%d/activate", gatewayAddr, state.listingID), "", state.adminData.Token)
+		require.NoError(t, err)
+		defer secondResp.Body.Close()
+
+		assert.Equal(t, http.StatusBadRequest, secondResp.StatusCode, "status must be changed only once")
+	})
+
+	t.Run("get active listing (public api)", func(t *testing.T) {
+		resp, err := sendGet(t, client, fmt.Sprintf("%s/api/v1/listings/%d", gatewayAddr, state.listingID), "")
+		require.NoError(t, err)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		var listingResp struct {
+			Listing Listing `json:"listing"`
+		}
+		readJSON(t, resp.Body, &listingResp)
+
+		assert.Equal(t, "Active", listingResp.Listing.Status)
+
+		assert.Equal(t, state.listingID, listingResp.Listing.ID)
+		assert.Equal(t, "Продам iPhone 3GS (2011)", listingResp.Listing.Title)
+		assert.Equal(t, "Полный комплект: Зарядное устройство. Коробка. Наушники. Чехол в подарок. UPD: Внешний вид с потёртостями", listingResp.Listing.Description)
+		assert.Equal(t, state.categoryID, listingResp.Listing.CategoryID)
+		assert.Equal(t, "Electronics", listingResp.Listing.CategoryName)
+		assert.Equal(t, 2, listingResp.Listing.UserID)
+		assert.Equal(t, 2500, listingResp.Listing.Price)
+	})
+
+	t.Run("deactivate listing as moderation", func(t *testing.T) {
+		resp, err := send(t, client, "POST", fmt.Sprintf("%s/api/v1/moderation/listings/%d/deactivate", gatewayAddr, state.listingID), "", state.adminData.Token)
+		require.NoError(t, err)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode, "listing must be successfully deactivated")
+
+		secondResp, err := send(t, client, "POST", fmt.Sprintf("%s/api/v1/moderation/listings/%d/deactivate", gatewayAddr, state.listingID), "", state.adminData.Token)
+		require.NoError(t, err)
+		defer secondResp.Body.Close()
+
+		assert.Equal(t, http.StatusBadRequest, secondResp.StatusCode, "status must be changed only once")
+	})
+
+	t.Run("get listing (public api)", mustNotBePubliclyVisibleTest)
+
+	t.Run("activate listing as user", func(t *testing.T) {
+		resp, err := send(t, client, "POST", fmt.Sprintf("%s/api/v1/listings/%d/activate", gatewayAddr, state.listingID), "", state.userData.Token)
+		require.NoError(t, err)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode, "listing must be successfully activated")
+
+		secondResp, err := send(t, client, "POST", fmt.Sprintf("%s/api/v1/listings/%d/activate", gatewayAddr, state.listingID), "", state.userData.Token)
+		require.NoError(t, err)
+		defer secondResp.Body.Close()
+
+		assert.Equal(t, http.StatusBadRequest, secondResp.StatusCode, "status must be changed only once")
+	})
+
+	t.Run("get active listing (public api)", func(t *testing.T) {
+		resp, err := sendGet(t, client, fmt.Sprintf("%s/api/v1/listings/%d", gatewayAddr, state.listingID), "")
+		require.NoError(t, err)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		var listingResp struct {
+			Listing Listing `json:"listing"`
+		}
+		readJSON(t, resp.Body, &listingResp)
+
+		assert.Equal(t, "Active", listingResp.Listing.Status)
+	})
+
+	t.Run("deactivate listing as user", func(t *testing.T) {
+		resp, err := send(t, client, "POST", fmt.Sprintf("%s/api/v1/listings/%d/deactivate", gatewayAddr, state.listingID), "", state.userData.Token)
+		require.NoError(t, err)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode, "listing must be successfully deactivated")
+
+		secondResp, err := send(t, client, "POST", fmt.Sprintf("%s/api/v1/listings/%d/deactivate", gatewayAddr, state.listingID), "", state.userData.Token)
+		require.NoError(t, err)
+		defer secondResp.Body.Close()
+
+		assert.Equal(t, http.StatusBadRequest, secondResp.StatusCode, "status must be changed only once")
+	})
+
+	t.Run("get listing (public api)", mustNotBePubliclyVisibleTest)
+
+	t.Run("delete listing", func(t *testing.T) {
+		resp, err := send(t, client, "DELETE", fmt.Sprintf("%s/api/v1/listings/%d", gatewayAddr, state.listingID), "", state.userData.Token)
+		require.NoError(t, err)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+	})
+
+	t.Run("get deleted listing (public api)", mustNotBePubliclyVisibleTest)
+
+	t.Run("get deleted listing (user api)", func(t *testing.T) {
+		resp, err := sendGet(t, client, fmt.Sprintf("%s/api/v1/users/%d/listings/%d", gatewayAddr, state.userData.UserID, state.listingID), state.userData.Token)
+		require.NoError(t, err)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode, "listing must not be accessible")
+	})
 }
