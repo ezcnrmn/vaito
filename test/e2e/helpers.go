@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -25,21 +24,11 @@ func seedDatabase(db *sql.DB) error {
 	return err
 }
 
-func cleanTables(t *testing.T, db *sql.DB, tables ...string) {
-	t.Helper()
-
-	for _, table := range tables {
-		query := fmt.Sprintf("TRUNCATE TABLE %s RESTART IDENTITY CASCADE", table)
-		if _, err := db.Exec(query); err != nil {
-			t.Fatalf("failed to clean table %s: %v", table, err)
-		}
-	}
-}
-
 func cleanUserTable(t *testing.T, db *sql.DB) {
 	t.Helper()
 
-	query := `DELETE FROM users WHERE id > 2;`
+	query := `DELETE FROM users WHERE id > 2;
+	SELECT setval(pg_get_serial_sequence('users', 'id'), (SELECT MAX(id) FROM users));`
 	_, err := db.Exec(query)
 	assert.NoError(t, err)
 }
