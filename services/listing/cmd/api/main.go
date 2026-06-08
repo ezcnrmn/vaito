@@ -12,6 +12,7 @@ import (
 
 	"github.com/ezcnrmn/vaito/services/listing/internal/app"
 	_ "github.com/lib/pq"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -57,7 +58,26 @@ func main() {
 	}
 	defer userGrpcClient.Close()
 
-	app := app.New(logger, db, userGrpcClient)
+	rabbitmqUrl := os.Getenv("RABBITMQ_URL")
+	conn, err := amqp.Dial(rabbitmqUrl)
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+	defer conn.Close()
+
+	channel, err := conn.Channel()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+	defer channel.Close()
+
+	app, err := app.New(logger, db, userGrpcClient, channel)
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
 
 	logger.Info("starting listing service", "port", port)
 	err = app.Run(listener)

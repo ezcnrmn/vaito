@@ -73,6 +73,9 @@ func (s *Server) ActivateListingByModeration(ctx context.Context, req *pb.Activa
 		return nil, err
 	}
 
+	// TODO: send notification - change visibility -> true
+	s.notification.PublishVisibilityChanged(ctx, true)
+
 	return &pb.ActivateListingByModerationResponse{}, nil
 }
 
@@ -101,6 +104,9 @@ func (s *Server) DeactivateListingByModeration(ctx context.Context, req *pb.Deac
 	if err != nil {
 		return nil, err
 	}
+
+	// TODO: send notification - change visibility -> false
+	s.notification.PublishVisibilityChanged(ctx, false)
 
 	return &pb.DeactivateListingByModerationResponse{}, nil
 }

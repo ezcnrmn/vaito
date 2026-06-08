@@ -31,6 +31,10 @@ db/seed: ## Adds seed data to db
 	docker exec -i vaito_postgres psql -U ${USER_DB_USER} -d ${USER_DB_NAME} < scripts/user_dev_data.sql
 	docker exec -i vaito_postgres psql -U ${LISTING_DB_USER} -d ${LISTING_DB_NAME} < scripts/listing_dev_data.sql
 
+.PHONY: rabbitmq/up
+rabbitmq/up: ## Runs RabbitMQ in docker
+	docker compose up -d rabbitmq
+
 .PHONY: run/gateway
 run/gateway: ## Runs gateway service
 	-go run -C services/gateway ./cmd/api/main.go -debug-log
@@ -42,6 +46,10 @@ run/user: ## Runs user service
 .PHONY: run/listing
 run/listing: ## Runs listing service
 	-go run -C services/listing ./cmd/api/main.go -debug-log
+
+.PHONY: run/notification
+run/notification: ## Runs notification service
+	-go run -C services/notification ./cmd/api/main.go
 
 .PHONY: gen/all
 gen/all: ## Gens go code for all .proto

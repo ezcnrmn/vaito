@@ -6,5 +6,6 @@ use (
 	./services/gateway
 	./services/listing
 	./services/user
+	./services/notification
 	./test/e2e
 )

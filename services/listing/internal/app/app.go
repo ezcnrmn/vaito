@@ -10,7 +10,9 @@ import (
 
 	pb "github.com/ezcnrmn/vaito/gen/go/listing"
 	pbUser "github.com/ezcnrmn/vaito/gen/go/user"
+	"github.com/ezcnrmn/vaito/services/listing/internal/notification"
 	"github.com/ezcnrmn/vaito/services/listing/internal/server"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
@@ -22,17 +24,23 @@ type App struct {
 	services   struct {
 		user pbUser.UserServiceClient
 	}
+	notification *notification.Notification
 }
 
-func New(logger *slog.Logger, db *sql.DB, userClientConn *grpc.ClientConn) *App {
+func New(logger *slog.Logger, db *sql.DB, userClientConn *grpc.ClientConn, amqpChannel *amqp.Channel) (*App, error) {
 	app := &App{log: logger}
+
+	notification, err := notification.NewNotification(amqpChannel)
+	if err != nil {
+		return nil, err
+	}
 
 	user := pbUser.NewUserServiceClient(userClientConn)
 
 	s := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(app.recoverPanic),
 	)
-	pb.RegisterListingServiceServer(s, server.NewServer(db, logger, user))
+	pb.RegisterListingServiceServer(s, server.NewServer(db, logger, user, notification))
 
 	health := health.NewServer()
 	grpc_health_v1.RegisterHealthServer(s, health)
@@ -40,7 +48,7 @@ func New(logger *slog.Logger, db *sql.DB, userClientConn *grpc.ClientConn) *App 
 	app.gRPCServer = s
 	app.services.user = user
 
-	return app
+	return app, nil
 }
 
 func (a *App) Run(listener net.Listener) error {
