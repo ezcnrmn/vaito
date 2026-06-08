@@ -13,21 +13,22 @@ graph TB
     Gateway -->|gRPC| Listing[Listing service]
     Listing -->|gRPC| User
 
-    User ~~~ Notification[Notification service]
+    Listing ~~~ Notification[Notification service]
   end
-
-  Listing -->|Publish AMQP| RMQ[[RabbitMQ Broker]]
-  RMQ -->|Consume AMQP| Notification
 
   subgraph DB ["PostgreSQL (Physical Instance)"]
     DB_User[(User Database)]
     DB_Listing[(Listing Database)]
   end
 
+  User ~~~ DB_User
+
   User -->|SQL| DB_User
   Listing -->|SQL| DB_Listing
 
-  DB ~~~ RMQ
+  Notification ~~~ RMQ[[RabbitMQ Broker]]
+  Listing -->|Publish AMQP| RMQ
+  RMQ -->|Consume AMQP| Notification
 ```
 
 [Схемы базы данных](#схемы-базы-данных)
