@@ -5,22 +5,29 @@
 ## Архитектура
 
 ```mermaid
-graph LR
+graph TB
   Client[Client] -->|HTTP/REST| Gateway[Gateway service]
 
   subgraph "Microservices"
     Gateway -->|gRPC| User[User service]
     Gateway -->|gRPC| Listing[Listing service]
     Listing -->|gRPC| User
+
+    User ~~~ Notification[Notification service]
   end
 
-  subgraph "PostgreSQL (Physical Instance)"
+  Listing -->|Publish AMQP| RMQ[[RabbitMQ Broker]]
+  RMQ -->|Consume AMQP| Notification
+
+  subgraph DB ["PostgreSQL (Physical Instance)"]
     DB_User[(User Database)]
     DB_Listing[(Listing Database)]
   end
 
   User -->|SQL| DB_User
   Listing -->|SQL| DB_Listing
+
+  DB ~~~ RMQ
 ```
 
 [Схемы базы данных](#схемы-базы-данных)
@@ -32,6 +39,7 @@ graph LR
 - Database: PostgreSQL
 - DevOps: Docker Compose
 - Docs: Swagger (OpenAPI)
+- Broker: RabbitMQ
 
 ## Запуск
 
@@ -64,12 +72,29 @@ USER_DB_DSN=postgres://vaito_user:pa55word@localhost:5432/users?sslmode=disable
                                            ^^^^^^^^^
 ```
 
-3. Запуск сервисов
+3. Поменять название сервиса `rabbitmq` на `localhost` в url
+
+```
+БЫЛО:
+RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+                                ^^^^^^^^
+СТАЛО:
+RABBITMQ_URL=amqp://guest:guest@localhost:5672/
+                                ^^^^^^^^^
+```
+
+4. Запуск сервисов
 
   - запуск базы данных в docker:
 
 ```bash
 make db/up
+```
+
+  - запуск RabbitMQ в docker:
+
+```bash
+make rabbitmq/up
 ```
 
   - запуск сервиса gateway:
@@ -88,9 +113,15 @@ make run/user
 
 ```bash
 make run/listing
+
+```
+  - запуск сервиса notification:
+
+```bash
+make run/notification
 ```
 
-4. После запуска api будет доступен на порту `:4000` (указывается в `.env.local`)
+5. После запуска api будет доступен на порту `:4000` (указывается в `.env.local`)
 
 > Swagger доступен по `http://localhost:4000/swagger/index.html`
 
