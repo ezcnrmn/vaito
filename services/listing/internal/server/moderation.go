@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	pb "github.com/ezcnrmn/vaito/gen/go/listing"
+	"github.com/ezcnrmn/vaito/gen/go/user"
 	"github.com/ezcnrmn/vaito/services/listing/internal/model"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -73,8 +74,12 @@ func (s *Server) ActivateListingByModeration(ctx context.Context, req *pb.Activa
 		return nil, err
 	}
 
-	// TODO: send notification - change visibility -> true
-	s.notification.PublishVisibilityChanged(ctx, true)
+	user, err := s.service.user.GetUser(ctx, &user.GetUserRequest{Id: listing.UserID})
+	if err != nil {
+		s.log.Error("unable to get user info. email is not sent", "error", err.Error())
+	} else {
+		s.notification.PublishVisibilityChanged(ctx, user.User.GetEmail(), listing.ID, true)
+	}
 
 	return &pb.ActivateListingByModerationResponse{}, nil
 }
@@ -105,8 +110,12 @@ func (s *Server) DeactivateListingByModeration(ctx context.Context, req *pb.Deac
 		return nil, err
 	}
 
-	// TODO: send notification - change visibility -> false
-	s.notification.PublishVisibilityChanged(ctx, false)
+	user, err := s.service.user.GetUser(ctx, &user.GetUserRequest{Id: listing.UserID})
+	if err != nil {
+		s.log.Error("unable to get user info. email is not sent", "error", err.Error())
+	} else {
+		s.notification.PublishVisibilityChanged(ctx, user.User.GetEmail(), listing.ID, false)
+	}
 
 	return &pb.DeactivateListingByModerationResponse{}, nil
 }

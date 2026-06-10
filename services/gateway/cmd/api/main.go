@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/ezcnrmn/vaito/services/gateway/internal/app"
+	"github.com/ezcnrmn/vaito/services/gateway/internal/config"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -49,7 +50,23 @@ func main() {
 	}
 	defer listingGrpcClient.Close()
 
-	app := app.New(port, logger, userGrpcClient, listingGrpcClient)
+	rabbitURL := os.Getenv("RABBITMQ_API_URL")
+	rabbitUser := os.Getenv("RABBITMQ_DEFAULT_USER")
+	rabbitPass := os.Getenv("RABBITMQ_DEFAULT_PASS")
+
+	cfg := config.Config{
+		Port: port,
+		Rabbit: struct {
+			User string
+			Pass string
+			URL  string
+		}{
+			User: rabbitUser,
+			Pass: rabbitPass,
+			URL:  rabbitURL,
+		},
+	}
+	app := app.New(cfg, logger, userGrpcClient, listingGrpcClient)
 
 	err = app.Run()
 	if err != nil {

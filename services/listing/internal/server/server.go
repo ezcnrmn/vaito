@@ -11,7 +11,7 @@ import (
 )
 
 type notification interface {
-	PublishVisibilityChanged(ctx context.Context, visibility bool) error
+	PublishVisibilityChanged(ctx context.Context, userEmail string, listingID int64, visibility bool) error
 }
 
 type Server struct {

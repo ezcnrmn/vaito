@@ -257,9 +257,6 @@ func (s *Server) ActivateListing(ctx context.Context, req *pb.ActivateListingReq
 		return nil, err
 	}
 
-	// TODO: send notification - change visibility -> true
-	s.notification.PublishVisibilityChanged(ctx, true)
-
 	return &pb.ActivateListingResponse{}, nil
 }
 
@@ -284,9 +281,6 @@ func (s *Server) DeactivateListing(ctx context.Context, req *pb.DeactivateListin
 	if err != nil {
 		return nil, err
 	}
-
-	// TODO: send notification - change visibility -> false
-	s.notification.PublishVisibilityChanged(ctx, false)
 
 	return &pb.DeactivateListingResponse{}, nil
 }

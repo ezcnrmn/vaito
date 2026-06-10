@@ -17,7 +17,14 @@ const apiV1 = "/api/v1"
 func (a *App) routes() http.Handler {
 	docs.SwaggerInfo.BasePath = apiV1
 
-	handler := handler.New(a.log, a.services.user, a.services.listing, a.services.health.user, a.services.health.listing)
+	handler := handler.New(
+		a.cfg,
+		a.log,
+		a.services.user,
+		a.services.listing,
+		a.services.health.user,
+		a.services.health.listing,
+	)
 	routes := httprouter.New()
 
 	routes.NotFound = http.HandlerFunc(handler.NotFound)

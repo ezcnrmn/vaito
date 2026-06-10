@@ -7,13 +7,16 @@ import (
 
 	pbListing "github.com/ezcnrmn/vaito/gen/go/listing"
 	pbUser "github.com/ezcnrmn/vaito/gen/go/user"
+	"github.com/ezcnrmn/vaito/services/gateway/internal/config"
 	"github.com/go-playground/validator/v10"
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
 type Handler struct {
-	log         *slog.Logger
-	validator   *validator.Validate
+	cfg       config.Config
+	log       *slog.Logger
+	validator *validator.Validate
+
 	userConn    pbUser.UserServiceClient
 	listingConn pbListing.ListingServiceClient
 	health      struct {
@@ -22,7 +25,14 @@ type Handler struct {
 	}
 }
 
-func New(logger *slog.Logger, userConn pbUser.UserServiceClient, listingConn pbListing.ListingServiceClient, userHealthConn, listingHealthConn grpc_health_v1.HealthClient) *Handler {
+func New(
+	config config.Config,
+	logger *slog.Logger,
+	userConn pbUser.UserServiceClient,
+	listingConn pbListing.ListingServiceClient,
+	userHealthConn,
+	listingHealthConn grpc_health_v1.HealthClient,
+) *Handler {
 	validator := validator.New()
 	validator.RegisterValidation("lettersAndDigits", lettersAndDigits)
 	validator.RegisterTagNameFunc(func(fld reflect.StructField) string {
@@ -34,6 +44,7 @@ func New(logger *slog.Logger, userConn pbUser.UserServiceClient, listingConn pbL
 	})
 
 	return &Handler{
+		cfg:         config,
 		log:         logger,
 		validator:   validator,
 		userConn:    userConn,

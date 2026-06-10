@@ -13,15 +13,18 @@ import (
 
 	pbListing "github.com/ezcnrmn/vaito/gen/go/listing"
 	pbUser "github.com/ezcnrmn/vaito/gen/go/user"
+	"github.com/ezcnrmn/vaito/services/gateway/internal/config"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
 type App struct {
-	port       string
+	cfg config.Config
+
 	log        *slog.Logger
 	httpServer *http.Server
-	services   struct {
+
+	services struct {
 		user    pbUser.UserServiceClient
 		listing pbListing.ListingServiceClient
 
@@ -32,13 +35,13 @@ type App struct {
 	}
 }
 
-func New(port string, logger *slog.Logger, userClient, listingClient *grpc.ClientConn) *App {
+func New(config config.Config, logger *slog.Logger, userClient, listingClient *grpc.ClientConn) *App {
 	userConn := pbUser.NewUserServiceClient(userClient)
 	listingConn := pbListing.NewListingServiceClient(listingClient)
 
 	app := &App{
-		port: port,
-		log:  logger,
+		cfg: config,
+		log: logger,
 	}
 	app.services.user = userConn
 	app.services.listing = listingConn
@@ -48,7 +51,7 @@ func New(port string, logger *slog.Logger, userClient, listingClient *grpc.Clien
 	routes := app.routes()
 
 	httpServer := &http.Server{
-		Addr:    fmt.Sprintf(":%s", port),
+		Addr:    fmt.Sprintf(":%s", app.cfg.Port),
 		Handler: routes,
 	}
 	app.httpServer = httpServer
@@ -77,7 +80,7 @@ func (a *App) Run() error {
 		shutdownError <- nil
 	}()
 
-	a.log.Info("starting gateway service", "port", a.port)
+	a.log.Info("starting gateway service", "port", a.cfg.Port)
 
 	err := a.httpServer.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {

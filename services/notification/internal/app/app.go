@@ -9,6 +9,8 @@ import (
 	"syscall"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+
+	"github.com/ezcnrmn/vaito/services/notification/internal/consumer"
 )
 
 type App struct {
@@ -17,12 +19,15 @@ type App struct {
 	queues struct {
 		email *amqp.Queue
 	}
+	consumer *consumer.Consumer
 }
 
 func New(logger *slog.Logger, amqpChannel *amqp.Channel) *App {
-	app := &App{log: logger, amqpCh: amqpChannel}
-
-	// TODO: Сделать возможность healthcheck'a сервиса
+	app := &App{
+		log:      logger,
+		amqpCh:   amqpChannel,
+		consumer: consumer.New(logger),
+	}
 
 	return app
 }
@@ -68,15 +73,13 @@ func (a *App) Run() error {
 
 	wg := sync.WaitGroup{}
 
-	// TODO: добавить лог о том что готов принимать сообщениея
+	a.log.Info("starting notification service")
 
-	wg.Go(func() {
-		for msg := range emails {
-			a.log.Info(string(msg.Body))
-		}
-	})
+	go a.consumer.ConsumeEmails(&wg, emails)
 
 	<-ctx.Done()
+	a.log.Info("shutting down notification service")
+
 	err = a.amqpCh.Cancel(consumerTag, false)
 	if err != nil {
 		return nil
